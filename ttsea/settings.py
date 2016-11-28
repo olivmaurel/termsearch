@@ -17,7 +17,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
+
+
+try:
+    from ttsea.local_settings import *
+except ImportError:
+    pass
 
 ALLOWED_HOSTS = []
 
@@ -25,7 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'search.apps.SearchConfig',
+    'aggregator.apps.AggregatorConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -107,7 +113,3 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-try:
-    from local_settings import *
-except ImportError:
-    pass
