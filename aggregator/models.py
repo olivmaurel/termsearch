@@ -1,6 +1,6 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-
+from django.utils import timezone
 
 
 class Language(models.Model):
@@ -9,7 +9,7 @@ class Language(models.Model):
     code2d = models.CharField(max_length=2)
 
     def __str__(self):
-        return self.name
+        return "{} - {}".format(self.code2d.upper(), self.name)
 
 class Website(models.Model):
     name = models.CharField(max_length=50)
@@ -17,11 +17,11 @@ class Website(models.Model):
     search_url = models.URLField()
     languages = models.ManyToManyField(Language)
 
-    def getLanguages(self):
-        res = []
-        for l in self.languages.all():
-             res.append(l)
-        return res     
+    # def getLanguages(self):
+    #     res = []
+    #     for l in self.languages.all():
+    #          res.append(l)
+    #     return res     
 
     def __str__(self):
         return self.name
@@ -46,10 +46,15 @@ class Record(models.Model):
     result_url = models.URLField()
 
 class Search(models.Model):
+
     keywords = models.CharField(max_length=100)
-    date = models.DateTimeField()
-    sourceLanguage = models.ForeignKey(Language, related_name="sourceLanguage", on_delete=models.CASCADE)
-    targetLanguage = models.ForeignKey(Language, related_name="targetLanguage", on_delete=models.CASCADE)
+    date = models.DateTimeField(default=timezone.now)
+    
+    sourceLanguage = models.ForeignKey(Language, default=None, related_name="sourceLanguage", on_delete=models.CASCADE)
+    targetLanguage = models.ForeignKey(Language, default=None, related_name="targetLanguage", on_delete=models.CASCADE)
     website = models.ForeignKey(Website, on_delete=models.CASCADE)
     domain = models.ForeignKey(Domain, on_delete=models.CASCADE)
     results = JSONField()
+
+    def __str__(self):
+        return "\"{}\" ({} > {}) on {}".format(self.keywords, self.sourceLanguage, self.targetLanguage, self.website)

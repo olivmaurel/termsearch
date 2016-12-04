@@ -11,11 +11,11 @@ class SearchForm(forms.Form):
 ordinateur,fr,en,iate,Pharmaceutical industry,computer,"[datetime.date(2016, 11, 18)]"
 	"""
 
-	keywords = forms.CharField(label='search_keywords', max_length=100)
-	sourceLanguage = forms.ModelChoiceField(Language)
-	targetLanguage = forms.ModelChoiceField(Language)
-	website = forms.ModelChoiceField(Website)
+	keywords = forms.CharField(label='Search terms', max_length=100)
+	sourceLanguage = forms.ModelChoiceField(Language.objects.all(), label="From", empty_label="Source language")
+	targetLanguage = forms.ModelChoiceField(Language.objects.all(), label="To", empty_label="Target language")
+	websites = forms.ModelMultipleChoiceField(Website.objects.all(), label="", widget=forms.CheckboxSelectMultiple)
 
-	def proces_request(self):
+	def process_request(self):
 		#TODO
 		pass
