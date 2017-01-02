@@ -7,15 +7,12 @@ class NameForm(forms.Form):
 
 class SearchForm(forms.Form):
 	"""
-	translations,targetLanguage,sourceLanguage,website,domain,terms,last_updated
-ordinateur,fr,en,iate,Pharmaceutical industry,computer,"[datetime.date(2016, 11, 18)]"
+	translations,target_language,source_language,website,domain,terms,last_updated
+	ordinateur,fr,en,iate,Pharmaceutical industry,computer,"[datetime.date(2016, 11, 18)]"
 	"""
 
 	keywords = forms.CharField(label='Search terms', max_length=100)
-	sourceLanguage = forms.ModelChoiceField(Language.objects.all(), label="From", empty_label="Source language")
-	targetLanguage = forms.ModelChoiceField(Language.objects.all(), label="To", empty_label="Target language")
-	websites = forms.ModelMultipleChoiceField(Website.objects.all(), label="", widget=forms.CheckboxSelectMultiple)
+	source_language = forms.ModelChoiceField(Language.objects.all(), label="From", empty_label="Source language")
+	target_language = forms.ModelChoiceField(Language.objects.all(), label="To", empty_label="Target language")
+	websites = forms.ModelMultipleChoiceField(Website.objects.all(), label="", widget=forms.CheckboxSelectMultiple(attrs={"checked":""}))
 
-	def process_request(self):
-		#TODO
-		pass
