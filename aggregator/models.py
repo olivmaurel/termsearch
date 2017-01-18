@@ -1,13 +1,16 @@
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils import timezone
 
+from aggregator.scraper.spiders import *
+import scrapydo
+
 import logging
+
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 class Language(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, unique=True)
     code3d = models.CharField(max_length=3)
     code2d = models.CharField(max_length=2)
 
@@ -16,7 +19,7 @@ class Language(models.Model):
 
 class Website(models.Model):
     DEFAULT_PK=1
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     homepage = models.URLField()
     search_url = models.URLField()
     languages = models.ManyToManyField(Language)
@@ -76,12 +79,74 @@ class Search(models.Model):
         # for each domain in a record
         for domain in record['domain']:
             dom, created = Domain.objects.get_or_create(name=domain)
-            print(dom, domain, type(domain))
             logger.debug("domain: {}\n created : {}".format(domain, created))
             domains.append(dom)
 
         return terms, translations, domains
 
+    def scraper(self):
+
+        scrapydo.setup()
+
+        logger.debug("Now sending HTTP request to get results from {}".format(self.website))
+
+        search_parameters = {
+            'keywords': self.keywords,
+            'source_language': self.source_language,
+            'target_language': self.target_language
+        }
+        logger.debug("Search_parameters : {}".format(search_parameters))
+
+        spider = scrapydo.run_spider(self.get_spider(search_parameters), **search_parameters)
+
+        self.results_as_django_records(spider)
+
+        logger.debug(self.record_set.all())
+
+        return self.record_set.all()
+
+
+    def get_spider(self, search_parameters):
+        # todo test dict performance versus elif switch-like statement
+        return {'iate': IateSpider(**search_parameters),
+                'proz': ProzSpider(**search_parameters),
+                'termium': TermiumSpider(**search_parameters)}[self.website.name.lower()]
+
+    def results_as_django_records(self, spider):
+        '''
+        :param search: django.models.Search
+        :param spider: scrapydo spider
+        :return: a list of django.models.Record objects
+        '''
+        django_records = []
+
+        # for each record in results
+        for spider_result in spider:
+            # create a new django.models.Record, and add it to the list
+            django_records.append(self.create_record(spider_result))
+
+        return django_records
+
+    def create_record(self, record):
+        '''
+        :param search: django.models.Search
+        :param record: scrapy.items.Record
+        :return: django.models.Record
+        creates a new Record object using Record.objects.create()
+        adds terms and translations as a list (Manytomany
+
+        '''
+        new_record = Record.objects.create(search=self)
+        # list of Term objects (terms, translations, domains) to save in Record
+        terms, translations, domains = self.get_or_create_manytomanys(record)
+        new_record.terms.add(*terms)
+        new_record.translations.add(*translations)
+        new_record.domains.add(*domains)
+
+        # debug record in logger (dev only)
+        logger.debug(record)
+
+        return record
 
 class Record(models.Model):
     terms = models.ManyToManyField(Term, related_name="terms")
@@ -99,4 +164,6 @@ class Record(models.Model):
         return "***\nterms:{}\ntranslations:{}\ndomains:{}\nsource:{}\n***\n".format(terms_list,
                                                                         translations_list,
                                                                         domains_list,
-                                                                        self.search.website)
+                                                                        self.search.website.name)
+
+

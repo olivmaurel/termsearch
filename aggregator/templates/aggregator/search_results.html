@@ -1,0 +1,29 @@
+{% extends "aggregator/term_search.html"%}
+
+{% block content %}
+    {% block form %}
+    <form class="form-inline" action="/aggregator/search" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input class="btn btn-default" type="submit" value="Submit" />
+    </form>
+    {% endblock %}
+
+    {% block results%}
+        <div class="search_results">
+            <h2>Results found : {{ queryset|length }}</h2>
+            <ul>
+                {% for record in queryset %}
+                <li class="record">
+                    {% for term in record.terms.all %} <span id="term" class="well-sm">{{ term.name }}</span> {% endfor %}
+                    <br/>
+                    {% for translations in record.translations.all %} <span id="translation" class="well-sm">{{ translations.name }}</span> {% endfor %}
+                    <br/>
+                    <div id="website_source">source:{{ record.search.website.name }}</div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endblock %}
+
+{% endblock %}

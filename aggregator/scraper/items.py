@@ -18,7 +18,10 @@ class Record(scrapy.Item):
     domain = scrapy.Field()
     website = scrapy.Field()
 
-
+    def __str__(self):
+        return "***\nScrapy record\n***" \
+               "\nWebsite\n{}\nDomain\n{}\nTerms\n{}\nTranslations{}\n" \
+               "".format(self.website, self.domain, self.terms, self.translations)
 
 
 class RecordLoader(ItemLoader):
@@ -31,8 +34,7 @@ class RecordLoader(ItemLoader):
         return x
     
     terms_in = MapCompose(strip_tags)
-    
     translations_in = MapCompose(strip_tags)
-
+    domain_in = MapCompose(strip_tags)
     
     

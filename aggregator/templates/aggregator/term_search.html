@@ -1,23 +1,15 @@
 {% extends "aggregator/base.html"%}
 
 {% block content %}
+
     {% block form %}
-    <form class="pure-form" action="/aggregator/search" method="post">
+    <form class="form-inline" action="/aggregator/search" method="post">
         {% csrf_token %}
         {{ form }}
-        <input class="pure-button pure-button-primary" type="submit" value="Submit" />
+        <input class="btn btn-default" type="submit" value="Submit" />
     </form>
     {% endblock %}
 
-    {% block results%}
-    <ul>
-        {% for record in queryset %}
-        <li>
-            Terms: {% for term in record.terms.all %} {{ term.name }} {% endfor %}
-            <br/>
-            Translations:  {% for translations in record.translations.all %} {{ translations.name }} {% endfor %}
-        </li>
-        {% endfor %}
-    </ul>
-    {% endblock %}
+
 {% endblock %}
+
