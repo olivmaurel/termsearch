@@ -1,24 +1,27 @@
-from django.contrib.postgres.fields import JSONField
+import scrapydo
+from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils import timezone
 
-import logging
+from aggregator.scraper.spiders import *
+
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 class Language(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, unique=True)
     code3d = models.CharField(max_length=3)
     code2d = models.CharField(max_length=2)
 
     def __str__(self):
-        return "{} - {}".format(self.code2d.upper(), self.name)
+        return "{} - {}".format(self.code2d.lower(), self.name)
 
 class Website(models.Model):
     DEFAULT_PK=1
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     homepage = models.URLField()
     search_url = models.URLField()
+    description = RichTextField(default="Enter description")
     languages = models.ManyToManyField(Language)
 
     # def getLanguages(self):
@@ -76,11 +79,70 @@ class Search(models.Model):
         # for each domain in a record
         for domain in record['domain']:
             dom, created = Domain.objects.get_or_create(name=domain)
-            print(dom, domain, type(domain))
             logger.debug("domain: {}\n created : {}".format(domain, created))
             domains.append(dom)
 
         return terms, translations, domains
+
+    def get_records_from_scrapy(self):
+        """
+        The twited Reactor used by scrapy doesn't work well with WSGI/Django, so Scrapydo is needed
+        to call scrapy more than once and get the scraping results as a list of scrapy.items.record objects
+
+        """
+        scrapydo.setup()
+
+        logger.debug("Now sending HTTP request to get results from {}".format(self.website))
+
+        search_parameters = {
+            'keywords': self.keywords,
+            'source_language': self.source_language,
+            'target_language': self.target_language
+        }
+
+        spider_results = scrapydo.run_spider(self.get_spider(search_parameters), **search_parameters)
+
+        return spider_results
+
+
+    def get_spider(self, search_parameters):
+        # todo test dict performance versus elif switch-like statement
+        return {'iate': IateSpider(**search_parameters),
+                'proz': ProzSpider(**search_parameters),
+                'termium': TermiumSpider(**search_parameters)}[self.website.name.lower()]
+
+    def save_results_in_db(self, spider):
+        '''
+        :param search: django.models.Search
+        :param spider: scrapydo spider
+        :return: a list of django.models.Record objects
+        '''
+        django_records = []
+
+        # for each record in results
+        for spider_result in spider:
+            # create a new django.models.Record, and add it to the list
+            django_records.append(self.create_record(spider_result))
+
+        return django_records
+
+    def create_record(self, record):
+        '''
+        :param search: django.models.Search
+        :param record: scrapy.items.Record
+        :return: django.models.Record
+        creates a new Record object using Record.objects.create()
+        adds terms and translations as a list (Manytomany
+
+        '''
+        new_record = Record.objects.create(search=self)
+        # list of Term objects (terms, translations, domains) to save in Record
+        terms, translations, domains = self.get_or_create_manytomanys(record)
+        new_record.terms.add(*terms)
+        new_record.translations.add(*translations)
+        new_record.domains.add(*domains)
+
+        return record
 
 
 class Record(models.Model):
@@ -99,4 +161,6 @@ class Record(models.Model):
         return "***\nterms:{}\ntranslations:{}\ndomains:{}\nsource:{}\n***\n".format(terms_list,
                                                                         translations_list,
                                                                         domains_list,
-                                                                        self.search.website)
+                                                                        self.search.website.name)
+
+

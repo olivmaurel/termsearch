@@ -1,114 +1,147 @@
+import io
 import logging
+import time
 
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
 from django.template import loader
+from django.views.generic.list import ListView
 
 from .forms import SearchForm
-from .models import Search, Record
+from .models import Search, Website
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+def home_page(request):
 
-
-def index(request):
     template = loader.get_template('aggregator/index.html')
     return HttpResponse(template.render())
-
 
 def term_search(request):
 
     if request.method == 'POST':
         form = SearchForm(request.POST)
         if form.is_valid():
-            for website in form.cleaned_data['websites']:
 
-                search, search_created = Search.objects.get_or_create(
+            # instantiate an empty queryset, then add each search to it using "|"
+            search_queryset = Search.objects.none()
+
+            for website in form.get_all_websites():
+
+                search, search_not_in_db = Search.objects.get_or_create(
                                         keywords=form.cleaned_data['keywords'],
                                         source_language = form.cleaned_data['source_language'],
                                         target_language = form.cleaned_data['target_language'],
                                         website = website,
                                         )
                 search.domains.add(1) # todo implement manytomany domains
-                logger.debug("{} \n New search:{}".format(search, search_created))
+                logger.info("{} \n New search:{}".format(search, search_not_in_db))
 
-                if search_created:
-                    # go scrape the results
-                    queryset = scraper(search)
-                else:
-                    # take the results from the db
-                    # all the records matching 'search' - foreign key
-                    queryset = search.record_set.all()
+                if search_not_in_db:
+                    scrapy_results = search.get_records_from_scrapy()
+                    search.save_results_in_db(scrapy_results)
+
+                search_queryset = search_queryset | search
+
+
             context = {
-                    "queryset": queryset,
-                    "form": form
-                    }
-            # return HttpResponse('Results found: {}<br>You searched for :<br> {} <br> {}'.format(len(results), search, results))
-            return render(request, 'aggregator/term_search.html', context)
+                "queryset": search_queryset,
+                "form": form
+                }
+
+            return render(request, 'aggregator/search_results.html', context)
     else:
         form = SearchForm()
-    return render(request, 'aggregator/term_search.html', locals())
-
-def spider_results_as_django_records(search, spider):
-    '''
-    :param search: django.models.Search
-    :param spider: scrapydo spider
-    :return: a list of django.models.Record objects
-    '''
-    django_records = []
-
-    # for each record in results
-    for record in spider:
-        # create a new django.models.Record, and add it to the list
-        django_records.append(create_record(search, record))
-
-    return django_records
-
-def create_record(search, record):
-        '''
-        :param search: django.models.Search
-        :param record: scrapy.items.Record
-        :return: django.models.Record
-        creates a new Record object using Record.objects.create()
-        adds terms and translations as a list (Manytomany
-
-        '''
-        new_record = Record.objects.create(search=search)
-        # list of Term objects (terms, translations, domains) to save in Record
-        terms, translations, domains = search.get_or_create_manytomanys(record)
-        new_record.terms.add(*terms)
-        new_record.translations.add(*translations)
-        new_record.domains.add(*domains)
-        return record
+        return render(request, 'aggregator/search_form.html', locals())
 
 
-def scraper(search):
-    '''
+def navbar(request):
+    return render (request, 'aggregator/navbar.html')
 
-    :param search: django.models.Search
-    :return: a list of django.models.Record objects
-    '''
-    from .scraper.spiders.iate import IateSpider
+def business(request):
+    return render (request, 'aggregator/business-casual.html')
 
+def skeleton(request):
+    return render (request, 'aggregator/skeleton.html')
+
+
+def normal_httpresponse(request): # todo remove after testing
     import scrapydo
+    from aggregator.scraper.spiders import IateSpider
+    from aggregator.models import Language
 
     scrapydo.setup()
 
-    logger.debug("Now sending HTTP request to get results from {}".format(search.website))
-    search_parameters = {
-        'keywords': search.keywords,
-        'source_language': search.source_language,
-        'target_language': search.target_language
-    }
-    logger.debug("Search_parameters : {}".format(search_parameters))
+    search_parameters = {'keywords': 'computer',
+                         'source_language': Language.objects.get(code2d='en'),
+                         'target_language': Language.objects.get(code2d='fr')}
+
+    return HttpResponse(scrapydo.run_spider(IateSpider(**search_parameters), yield_items=True, capture_items=False,
+                            **search_parameters))
+
+def simplestreamer(request):
+    s = StreamingHttpResponse()
+    s.streaming_content = streaming_basictest()
+    return s
 
 
-    spider = scrapydo.run_spider(IateSpider(**search_parameters), **search_parameters)
-    # add each record to the db
-    spider_results_as_django_records(search, spider)  # test
+def streamer(request):
+
+    stream =  StreamingHttpResponse()
+
+    streaming_spider(stream)
+
+    logger.warning(stream.getvalue())
+    return stream
+
+def streaming_spider(stream):
+
+    import scrapydo
+    from scrapy import signals
+    from aggregator.scraper.spiders import IateSpider
+    from aggregator.models import Language
+
+    scrapydo.setup()
+
+    def item_passed(item):
+        stream._set_streaming_content(item)
+
+    def spider_closed():
+        stream.close()
+
+    def setup_crawler(crawler):
+        crawler.signals.connect(signals.item_passed, item_passed)
+        crawler.signals.connect(signals.spider_closed, spider_closed)
+
+    search_parameters = {'keywords': 'boilerplate',
+                         'source_language': Language.objects.get(code2d='en'),
+                         'target_language': Language.objects.get(code2d='fr')}
+
+    scrapydo.run_spider(IateSpider(**search_parameters), capture_items=False, **search_parameters)
 
 
-    # and return a Queryset of django.models.Record
-    return search.record_set.all()
+def streaming_io():
 
+    stream = io.StringIO("Let's start streaming...")
+    for i in range(10):
+        # time.sleep(1)
+        stream.write("{}<br/>".format(i))
+
+    return stream.read()
+
+
+def streaming_basictest():
+
+    for i in range(10):
+        time.sleep(1)
+        yield "{}<br/>".format(i)
+
+
+class WebsiteListView(ListView):
+
+    model = Website
+
+    def get_context_data(self, **kwargs):
+        context = super(WebsiteListView, self).get_context_data(**kwargs)
+        return context

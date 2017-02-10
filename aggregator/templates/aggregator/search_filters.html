@@ -1,0 +1,18 @@
+
+
+{% block filters %}
+
+
+<nav class="nav nav-stacked" data-spy="affix" data-offset-top="200">
+        <h4>Results found : {{ queryset.record_set.all | length }}</h4>
+        <ul>
+
+        {% for search in queryset %}
+          <li><a href="#section2">{{ search.website }}</a></li>
+
+        {% endfor %}
+
+        </ul>
+</nav>
+
+{% endblock filters %}

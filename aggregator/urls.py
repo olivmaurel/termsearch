@@ -1,11 +1,15 @@
-from django.conf.urls import url
+from django.conf.urls import include, url
 
-from . import views
-
+from aggregator import views
 
 urlpatterns = [
     url(r'^search$', views.term_search, name='term_search'),
-    url(r'^$', views.index, name='index'),
-    # url(r'^streamer$', views.streamer, name='streamer'),
+    url(r'^ressources$', views.WebsiteListView.as_view(), name='ressources'),
+    url(r'^$', views.home_page, name='home'),
+    url(r'^streamer$', views.streamer, name='streamer'),
+    url(r'^simplestreamer$', views.simplestreamer, name='simplestreamer'), # todo remove after testing
+    url(r'^navbar$', views.navbar, name='navbar'), # todo remove after testing
+    url(r'^normalhttp$', views.normal_httpresponse, name='normalhttp'),
     # url(r'^results$', views.crawler_results, name='results'),
+    url(r'^ckeditor/', include('ckeditor_uploader.urls')),
 ]

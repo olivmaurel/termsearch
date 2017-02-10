@@ -1,0 +1,14 @@
+{% extends "aggregator/base.html"%}
+
+{% block content %}
+<h1>Ressources</h1>
+<div>
+{% for website in object_list %}
+    <h2>{{ website.name }}</h2>
+    <p>{{website.description|safe}}</p>
+{% empty %}
+    <h2>No ressources yet.</h2>
+{% endfor %}
+</div>
+{% endblock %}
+

@@ -1,6 +1,6 @@
-from aggregator.models import *
+import csv
 
-import csv, logging
+from aggregator.models import *
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ def languages_from_csv(path):
 
 def import_all():
 
-    logger.info("Importing all csv file into Django dv")
+    logger.info("Importing all csv file into Django db")
     language_csv_path = 'static/csv/languages.csv'
     languages_from_csv(language_csv_path)
 

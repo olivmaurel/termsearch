@@ -1,16 +1,53 @@
-{% load staticfiles %}
-<html>
+<!DOCTYPE html>
+<html lang="en">
+  {% load static %}
   <head>
-    <link rel="stylesheet"
-          href="https://unpkg.com/purecss@0.6.1/build/pure-min.css"
-          integrity="sha384-CCTZv2q9I9m3UOxRLaJneXrrqKwUNOzZ6NGEUMwHtShDJ+nCoiXJCAgi05KfkLGY"
-          crossorigin="anonymous">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  </head>
+    <title>Termsearch Aggregator</title>
+    <meta charset="utf-8">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="{% static 'aggregator/css/style.css' %}" />
 
-  <body>
-    {% block content %}
-    {% endblock %}
+    </head>
+<body>
 
-  </body>
+<header class="container-fluid" style="background-color:grey;color:#fff;height:200px;">
+  <h1>Termsearch Aggregator</h1>
+  <h3>The online search tool for translators</h3>
+  <p>Select your language pair, enter the term or expression you are looking for.</p>
+  <p>Scroll through the results, or filter them by resource or domain using the filter menu on the left.</p>
+</header>
+
+
+  <nav class="navbar navbar-default" data-spy="affix" data-offset-top="200">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+        {% include "aggregator/search_form.html" %}
+  </nav>
+
+<div class="container container-fullwidth">
+  {% block content %}
+  {% endblock content %}
+</div>
+
+
+<footer>
+<!-- place footer here -->
+</footer>
+
+
+
+
+</body>
+<script src="https://code.jquery.com/jquery.min.js" ></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+
 </html>
+
+
+
