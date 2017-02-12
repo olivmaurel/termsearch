@@ -26,12 +26,12 @@ class Record(scrapy.Item):
 
 class RecordLoader(ItemLoader):
 
-    def strip_tags(x):
+    def strip_tags(_termstring):
         import re
 
-        x = re.sub(re.escape('\xa0'), '', x)
+        _string_without_tags = re.sub(re.escape('\xa0'), '', _termstring)
 
-        return x
+        return _string_without_tags
     
     terms_in = MapCompose(strip_tags)
     translations_in = MapCompose(strip_tags)

@@ -46,7 +46,6 @@ class SearchForm(forms.Form):
             q_source_language = Q(languages=self.cleaned_data['source_language'])
             q_target_language = Q(languages=self.cleaned_data['target_language'])
             website_list = Website.objects.filter(q_source_language).filter(q_target_language).distinct().order_by('id')
-            logger.warning(website_list)
             return website_list
         else:
             return Website.objects.none()

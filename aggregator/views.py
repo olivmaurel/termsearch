@@ -24,7 +24,6 @@ def term_search(request):
         form = SearchForm(request.POST)
         if form.is_valid():
 
-            # instantiate an empty queryset, then add each search to it using "|"
             search_queryset = Search.objects.none()
 
             for website in form.get_all_websites():
@@ -42,8 +41,8 @@ def term_search(request):
                     scrapy_results = search.get_records_from_scrapy()
                     search.save_results_in_db(scrapy_results)
 
-                search_queryset = search_queryset | search
-
+                search_queryset = search_queryset | search.record_set.all()
+                logger.info("record set : {}".format(search.record_set.all()))
 
             context = {
                 "queryset": search_queryset,
@@ -53,17 +52,7 @@ def term_search(request):
             return render(request, 'aggregator/search_results.html', context)
     else:
         form = SearchForm()
-        return render(request, 'aggregator/search_form.html', locals())
-
-
-def navbar(request):
-    return render (request, 'aggregator/navbar.html')
-
-def business(request):
-    return render (request, 'aggregator/business-casual.html')
-
-def skeleton(request):
-    return render (request, 'aggregator/skeleton.html')
+        return render(request, 'aggregator/search_home.html', locals())
 
 
 def normal_httpresponse(request): # todo remove after testing

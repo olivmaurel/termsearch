@@ -173,22 +173,45 @@ class ProzSpider(GenericSpider):
         # for each result
         for i, result in enumerate(tables):
 
-            domain = result.xpath('normalize-space(string(../td[3]))').extract()
+
             terms = result.xpath('normalize-space(string(./a))').extract()
             translations = result.xpath('normalize-space(string(./a[2]))').extract()
-            logger.debug([domain, terms, translations])
 
             # create a new record
             rec = RecordLoader(Record(), selector=result)
             rec.add_value('website', self.name)
-            rec.add_value('domain', domain),
+            rec.add_value('domain', self.get_domain(result)),
             rec.add_value('source_language',self.source_language),
             rec.add_value('target_language', self.target_language),
             rec.add_value('terms', terms),
             rec.add_value('translations', translations),
 
-
             yield rec.load_item()
+
+    def get_domain(self, result):
+        """
+        takes a single string containing all the domains for the result,
+        removes the double quotes in it, and split it in a list of strings,
+        one string per domain
+
+        # >>> result = ['Tech/Engineering>Computers(general);
+                    Engineering(general);
+                    IT(InformationTechnology)>"Wordnet";
+                    "Finance/Business";
+                    "Automotive Glossary (Chrysler Terminology) English/Portuguese (BRAZIL)"']
+
+        # >>> ProzSpider.get_domain(result)
+
+        ['Tech/Engineering>Computers(general)',
+            ' Engineering(general)',
+            ' IT(InformationTechnology)>Wordnet',
+            ' Finance/Business',
+            ' Automotive Glossary (Chrysler Terminology) English/Portuguese (BRAZIL)']
+
+
+        """
+        domain = result.xpath('normalize-space(string(../td[3]))').extract()
+        return domain[0].replace('"', '').split(";")
 
 class TermiumSpider (GenericSpider):
 

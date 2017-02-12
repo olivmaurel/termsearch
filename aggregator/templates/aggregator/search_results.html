@@ -8,30 +8,30 @@
           {% include "aggregator/search_filters.html" %}
     </div>
     <div class="col-sm-10 col-static" id="search_results">
-        {% for record in queryset.record_set.all %}
-            <div class="results-row" id="record">
+      {% for record in queryset %}
+          <div class="results-row" id="record">
 
-                <div id="record-terms" class="col-sm-5 col-static">
-                    <ul>
-                        {% for term in record.terms.all %}
-                            <li>{{ term.name }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div id="record-translations" class="col-sm-5 col-static">
-                    <ul>
-                        {% for translation in record.translations.all %}
-                            <li>{{ translation.name }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <hr/>
-                <div id="domains">
-                    <span id="website_source" class="label label-primary">{{ record.search.website.name }}</span>
-                </div>
-            </div>
-            <hr/>
-        {% endfor %}
+              <div id="record-terms" class="col-sm-5 col-static">
+                  <ul>
+                      {% for term in record.terms.all %}
+                          <li>{{ term.name }}</li>
+                      {% endfor %}
+                  </ul>
+              </div>
+              <div id="record-translations" class="col-sm-5 col-static">
+                  <ul>
+                      {% for translation in record.translations.all %}
+                          <li>{{ translation.name }}</li>
+                      {% endfor %}
+                  </ul>
+              </div>
+              <hr/>
+              <div id="domains">
+                  <span id="website_source" class="label label-primary">{{ record.search.website.name }}</span>
+              </div>
+          </div>
+          <hr/>
+      {% endfor %}
 
     </div>
   </div>
