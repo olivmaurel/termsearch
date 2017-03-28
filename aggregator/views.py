@@ -79,10 +79,34 @@ def streamer(request):
 
     stream =  StreamingHttpResponse()
 
-    streaming_spider(stream)
+    from aggregator.scraper.spiders import IateSpider
+    from aggregator.models import Language
 
-    logger.warning(stream.getvalue())
+    search_parameters = {'keywords': 'boilerplate',
+                         'source_language': Language.objects.get(code2d='en'),
+                         'target_language': Language.objects.get(code2d='fr')}
+
     return stream
+
+def use_scrapy_with_downloader(stream):
+    # dfd = spider.crawler.engine.download(request, spider)
+    import scrapy
+    from aggregator.scraper.spiders import IateSpider
+    from aggregator.models import Language
+
+    search_parameters = {'keywords': 'boilerplate',
+                         'source_language': Language.objects.get(code2d='en'),
+                         'target_language': Language.objects.get(code2d='fr')}
+
+    spider = IateSpider (**search_parameters)
+
+    request = scrapy.Request (url=spider.remoteurl)
+    scrapy.crawler.Crawler
+    response = spider.crawler.engine.download(request, spider)
+
+    return IateSpider.parse(response)
+
+
 
 def streaming_spider(stream):
 

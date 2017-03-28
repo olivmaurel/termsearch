@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-
+from aggregator import views
 urlpatterns = [
 	url(r'^aggregator/', include('aggregator.urls')),
+    url(r'^$', views.home_page, name='home'),
     url(r'^admin/', admin.site.urls),
 ]
