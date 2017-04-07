@@ -20,7 +20,7 @@ DEBUG = True
 
 # import local settings containing secretkey and database authentication parameters
 try:
-    from ttsea.local_settings import *
+    from termsearch.local_settings import *
 except ImportError:
     pass
 
@@ -49,7 +49,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'ttsea.urls'
+ROOT_URLCONF = 'termsearch.urls'
 
 TEMPLATES = [
     {
@@ -67,7 +67,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ttsea.wsgi.application'
+WSGI_APPLICATION = 'termsearch.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
