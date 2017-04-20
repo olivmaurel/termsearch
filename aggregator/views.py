@@ -9,7 +9,8 @@ from django.views.generic.list import ListView
 
 from .forms import SearchForm
 from .models import Search, Website
-
+from .scraper.spiders import IateSpider, TermiumSpider, ProzSpider
+from aggregator.models import Language
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -92,8 +93,8 @@ def term_search(request):
 
 def normal_httpresponse(request): # todo remove after testing
     import scrapydo
-    from aggregator.scraper.spiders import IateSpider
-    from aggregator.models import Language
+    from aggregator.scraper.scrapy_spiders import IateSpider
+
 
     scrapydo.setup()
 
@@ -105,28 +106,31 @@ def normal_httpresponse(request): # todo remove after testing
                             **search_parameters))
 
 def simplestreamer(request):
-    s = StreamingHttpResponse()
-    s.streaming_content = streaming_basictest()
-    return s
 
+    import requests
+    from itertools import chain
 
-def streamer(request):
-
-    stream =  StreamingHttpResponse()
-
-    from aggregator.scraper.spiders import IateSpider
-    from aggregator.models import Language
-
-    search_parameters = {'keywords': 'boilerplate',
+    search_parameters = {'keywords': 'computer',
                          'source_language': Language.objects.get(code2d='en'),
                          'target_language': Language.objects.get(code2d='fr')}
 
-    return stream
+    iate = IateSpider(**search_parameters)
+    termium = TermiumSpider(**search_parameters)
+    proz = ProzSpider(**search_parameters)
+
+    results = chain(proz.parse(requests.get(proz.url)),
+                    iate.parse(requests.get(iate.url)),
+                    streaming_basictest(),
+                    termium.parse(requests.get(termium.url))
+                    ) #
+
+    return StreamingHttpResponse(results)
+
 
 def use_scrapy_with_downloader(stream):
     # dfd = spider.crawler.engine.download(request, spider)
     import scrapy
-    from aggregator.scraper.spiders import IateSpider
+    from aggregator.scraper.scrapy_spiders import IateSpider
     from aggregator.models import Language
 
     search_parameters = {'keywords': 'boilerplate',
@@ -136,7 +140,7 @@ def use_scrapy_with_downloader(stream):
     spider = IateSpider (**search_parameters)
 
     request = scrapy.Request (url=spider.remoteurl)
-    scrapy.crawler.Crawler
+
     response = spider.crawler.engine.download(request, spider)
 
     return IateSpider.parse(response)
@@ -147,7 +151,7 @@ def streaming_spider(stream):
 
     import scrapydo
     from scrapy import signals
-    from aggregator.scraper.spiders import IateSpider
+    from aggregator.scraper.scrapy_spiders import IateSpider
     from aggregator.models import Language
 
     scrapydo.setup()
@@ -181,7 +185,7 @@ def streaming_io():
 
 def streaming_basictest():
 
-    for i in range(10):
+    for i in range(3):
         time.sleep(1)
         yield "{}<br/>".format(i)
 

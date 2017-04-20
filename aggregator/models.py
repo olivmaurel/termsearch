@@ -4,8 +4,8 @@ from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils import timezone
 
+
 from aggregator.scraper.spiders import *
-from aggregator.scraper.mytestspiders import *
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ class Search(models.Model):
             'target_language': self.target_language
         }
 
-        spider_results = scrapydo.run_spider(self.get_spider_with_args(search_parameters), **search_parameters)
+        spider_results = scrapydo.run_spider(self.get_spider_from_scrapy(search_parameters), **search_parameters)
         # todo delete this method when scrapy is deleted
         return spider_results
 
@@ -121,18 +121,20 @@ class Search(models.Model):
         search_parameters = {
             'keywords': self.keywords,
             'source_language': self.source_language,
-            'target_language': self.target_language
-        }
+            'target_language': self.target_language}
+
         # todo test dict performance versus elif switch-like statement
         return {'iate': IateSpider(**search_parameters),
                 'proz': ProzSpider(**search_parameters),
                 'termium': TermiumSpider(**search_parameters)}[self.website.name.lower()]
 
-    def get_spider_with_args(self, search_parameters):
+    def get_spider_from_scrapy(self, search_parameters):
 
-        return {'iate': IateSpider(**search_parameters),
-                'proz': ProzSpider(**search_parameters),
-                'termium': TermiumSpider(**search_parameters)}[self.website.name.lower()]
+        from aggregator.scraper import scrapy_spiders
+
+        return {'iate': scrapy_spiders.IateSpider(**search_parameters),
+                'proz': scrapy_spiders.ProzSpider(**search_parameters),
+                'termium': scrapy_spiders.TermiumSpider(**search_parameters)}[self.website.name.lower()]
 
     def save_results_in_db(self, page_results):
 

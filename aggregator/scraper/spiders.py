@@ -1,14 +1,11 @@
-import json
 import logging
-
-import scrapy
-
-from aggregator.scraper.items import RecordLoader, Record
+import json
+from lxml import html
 
 logger = logging.getLogger(__name__)
 
 
-class GenericSpider(scrapy.Spider):
+class GenericSpider(object):
 
     def __init__(self, keywords, source_language, target_language, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -16,14 +13,21 @@ class GenericSpider(scrapy.Spider):
         self.source_language = source_language
         self.target_language = target_language
 
+    def sanitize_result_string(self, text):
 
-    def __str__(self):
-        return "URL: {}\n Keywords: {}\n Langpair {}/{}".format(self.start_urls, self.keywords, self.source_language, self.target_language)
+        return text.replace('\xa0', '').replace('\"', '')
+
+    def get_results_as_list(self, response):
+
+        results_list = []
+
+        for record in self.parse(response):
+            results_list.append(record)
+
+        return results_list
 
 
 class IateSpider(GenericSpider):
-
-    name='iate'
 
     def __init__(self, keywords, source_language, target_language, *args, **kwargs):
         super().__init__(keywords, source_language, target_language, *args, **kwargs)
@@ -31,47 +35,46 @@ class IateSpider(GenericSpider):
         # IATE uses 2 digits language codes 'en', 'fr, 'it' etc
         self.source_language = source_language.code2d
         self.target_language = target_language.code2d
-
-        self.remoteurl = 'http://iate.europa.eu/SearchByQuery.do?' \
+        self.name = "iate"
+        self.url = 'http://iate.europa.eu/SearchByQuery.do?' \
                     'method=search&query={}&sourceLanguage={}' \
                     '&targetLanguages={}&domain=0' \
                     '&matching=&typeOfSearch=s'.format(self.keywords, self.source_language, self.target_language)
 
-        self.start_urls = [self.remoteurl]
-
-
     def parse(self, response):
 
-        tables = response.xpath('//div[@id="searchResultBody"]/table')
+        html_tree = html.fromstring(response.content)
 
-        for i, table in enumerate(tables):
+        results_list = html_tree.xpath('//div[@id="searchResultBody"]/table')
 
-            result = table.xpath('./tr')
-            text = result.xpath('normalize-space(.)')
-            logger.info(text)
-            rec = RecordLoader(Record(), text)
-
-            # rec.add_value('last_updated', datetime.date.today())
-            rec.add_value('website', self.name)
-            rec.add_value('source_language', self.source_language)
-            rec.add_value('target_language', self.target_language)
-
-            rec.add_value('domain', self.get_domains(text))
-
-            rec.add_value('terms', self.getterms(text))
-            rec.add_value('translations', self.gettranslations(text))
-
-            yield rec.load_item()
+        for result_table in results_list:
+            result = result_table.xpath('./tr')
+            yield self.create_record(result)
 
         # crawl the next page if more than 10 results
-        for f in response.xpath('//div[@id="searchResultFooter"]//*'):
-            res = f.xpath('normalize-space(.)').extract()
+        for f in html_tree.xpath('//div[@id="searchResultFooter"]//*'):
+            res = f.xpath('normalize-space(.)')
             if res == ['>']:
                 # todo: crawl every page when more than 10 pages
-                next_page = ''.join(f.xpath('./@href').extract())
-                yield scrapy.Request(next_page, self.parse)
+                next_page = ''.join(f.xpath('normalize-space(./@href)'))
+                yield self.parse(next_page)
 
+    def create_record(self, result):
 
+        record = dict()
+
+        record['website'] = self.name
+        record['source_language'] = self.source_language
+        record['target_language'] = self.target_language
+        # each result is a html table with 3+ tr tags
+        # first tr is the domain
+        # second tr starts with source_language.upper
+        # every following tr is a source terms until we have a tr starting with target_language.upper
+        # then, every following tr is a translation term
+        record['domain'] = self.get_domains(result)
+        record['terms'], record['translations'] = self.get_terms_and_translations(result)
+
+        return record
 
     def get_domains(self, result):
         """
@@ -81,61 +84,41 @@ class IateSpider(GenericSpider):
         # >>> get_domains(['TECHNICAL, AGRICULTURE, FORESTRY AND FISHERIES [EP] Full entry'])
         # ['TECHNICAL', 'AGRICULTURE, FORESTRY AND FISHERIES']
         """
+        text = result[0].xpath('normalize-space(.)')
 
-        text = result[0].extract()[:result[0].extract().index('[')-1]
+        text = text[:text.index('[')-1]
         domains = text.split(', ')
         return domains
 
-    def getterms(self, result):
+    def get_terms_and_translations(self, result):
         """
         the [0] item is always the domain in the IATE result table
         the [1] item is always a source in the IATE result table
         truncate the "EN " at the beginning of the string and add to the list
         """
-        terms = [result[1].extract()[3:]]
+        terms = [result[1].xpath('normalize-space(.)')[3:]]
+        translations = []
+        term_is_a_translation = False
 
         # then loop through all the remaining <tr> tags in the table, starting from [2]
         for item in result[2:]:
 
-            item = item.extract()
+            item = item.xpath('normalize-space(.)')
 
-            if item[0:3] == self.target_language.upper()+" ":
+            if item[0:3] == self.target_language.upper() + " ":
                 # if the string starts with target_language, then stop and return the result
-                return terms
+                translations.append(item[3:])
+                term_is_a_translation = True
+
+            elif term_is_a_translation:
+                translations.append(item)
             else:
                 terms.append(item)
 
-        return terms
-
-    def gettranslations(self, result):
-
-        # the [0] itam is always the domain in the IATE result table
-        # the [1] item is always a source in the IATE result table
-        # then loop through all the remaining <tr> tags in the table, starting from [2]
-        terms = []
-        is_translation = False
-
-        for item in result[2:]:
-
-            item = item.extract()
-
-            if item[0:3] == self.target_language.upper()+" ":
-                # if the string starts with target_language, truncate the first 3 characters
-                terms.append(item[3:])
-                is_translation = True
-
-            elif is_translation:
-                terms.append(item)
-
-            else:
-                pass
-
-        return terms
+        return terms, translations
 
 
 class ProzSpider(GenericSpider):
-
-    name = 'proz'
 
     def __init__(self, keywords, source_language, target_language, *args,  **kwargs):
 
@@ -144,51 +127,46 @@ class ProzSpider(GenericSpider):
         # proz uses 3 digits language codes 'eng', 'fra, 'ita' etc
         self.source_language = source_language.code3d
         self.target_language = target_language.code3d
-        self.remoteurl = 'http://www.proz.com/ajax/ajax_search.php'
-        self.start_urls = [self.remoteurl]
+        self.name = "proz"
+        self.url = 'http://www.proz.com/ajax/ajax_search.php'
+        self.formdata = {   'action': 'term_search',
+                            'search_params[term]': self.keywords,
+                            'search_params[from]': self.source_language,
+                            'search_params[to]': self.target_language,
+                            'search_params[bidirectional]': 'true',
+                            'search_params[results_per_page]': '100'}
 
     def parse(self, response):
 
-        formdata = {'action': 'term_search',
-                    'search_params[term]': self.keywords,
-                    'search_params[from]': self.source_language,
-                    'search_params[to]': self.target_language,
-                    'search_params[bidirectional]': 'true',
-                    'search_params[results_per_page]': '100'}
+        html_tree = html.fromstring(json.loads(response.text)['html'])
 
-        return scrapy.FormRequest(
-            url= self.remoteurl,
-            formdata=formdata,
-            callback=self.get_records
-        ) # todo add errback to deal with the different HTTP errors returned by the crawler
+        results_list = html_tree.xpath('//tbody[@class=\'search_result_body\']/tr/td[4]')
 
-    def get_records(self,response):
-        # all the results tables are contained within 1 value in a json file,
-        # so we need to create a new selector with the html within the json
-        selector = scrapy.Selector(text=json.loads(response.text)['html'],
-                                   type='html')
-        # tables are the different results to parse
-        tables = selector.xpath('//tbody[@class=\'search_result_body\']/tr/td[4]')
-        logger.debug("found {} results".format(len(tables)))
-        # for each result
-        for i, result in enumerate(tables):
+        for result in results_list:
+
+            yield self.create_record(result)
 
 
-            terms = result.xpath('normalize-space(string(./a))').extract()
-            translations = result.xpath('normalize-space(string(./a[2]))').extract()
+    def create_record(self, result):
 
-            # create a new record
-            rec = RecordLoader(Record(), selector=result)
-            rec.add_value('website', self.name)
-            rec.add_value('domain', self.get_domain(result)),
-            rec.add_value('source_language',self.source_language),
-            rec.add_value('target_language', self.target_language),
-            rec.add_value('terms', terms),
-            rec.add_value('translations', translations),
+        record = dict()
 
-            yield rec.load_item()
+        record['website'] = self.name
+        record['source_language'] = self.source_language
+        record['target_language'] = self.target_language
+        record['domain'] = self.get_domains(result)
+        record['terms'], record['translations'] = self.get_terms_and_translations(result)
 
-    def get_domain(self, result):
+        return record
+
+    def get_terms_and_translations(self, result):
+
+        terms = result.xpath('normalize-space(string(./a))')
+        translations = result.xpath('normalize-space(string(./a[2]))')
+
+        return terms, translations
+
+    def get_domains(self, result):
         """
         takes a single string containing all the domains for the result,
         removes the double quotes in it, and split it in a list of strings,
@@ -200,7 +178,7 @@ class ProzSpider(GenericSpider):
                     "Finance/Business";
                     "Automotive Glossary (Chrysler Terminology) English/Portuguese (BRAZIL)"']
 
-        # >>> ProzSpider.get_domain(result)
+        # >>> ProzSpider.get_domains(result)
 
         ['Tech/Engineering>Computers(general)',
             ' Engineering(general)',
@@ -210,12 +188,14 @@ class ProzSpider(GenericSpider):
 
 
         """
-        domain = result.xpath('normalize-space(string(../td[3]))').extract()
-        return domain[0].replace('"', '').split(";")
+        domain = result.xpath('normalize-space(string(../td[3]))')
+        # remove quotation marks and /xa0 unicode crap
+        domain = self.sanitize_result_string(domain)
+
+        return domain.split('>')
+
 
 class TermiumSpider (GenericSpider):
-
-    name = 'termium'
 
     def __init__(self, keywords, source_language, target_language, *args, **kwargs):
         super().__init__(keywords, source_language, target_language, *args, **kwargs)
@@ -223,58 +203,53 @@ class TermiumSpider (GenericSpider):
         # termium uses 2 digits language codes 'en', 'fr, 'it' etc
         self.source_language = source_language.code2d
         self.target_language = target_language.code2d
-
-        self.remoteurl = 'http://www.btb.termiumplus.gc.ca/tpv2alpha/' \
+        self.name = "termium"
+        self.url = 'http://www.btb.termiumplus.gc.ca/tpv2alpha/' \
                          'alpha-eng.html?lang=eng&srchtxt={}'.format(keywords)
 
+    def create_record(self, result):
 
-        self.start_urls = [self.remoteurl]
+        record = dict()
 
-    def parse (self, response):
-        logger.debug(response)
+        record['website'] = self.name
+        record['source_language'] = self.source_language
+        record['target_language'] = self.target_language
+        record['domain'] = self.get_domains(result)
+        record['terms']  = self.get_terms(self.source_language, result)
+        record['translations'] = self.get_terms(self.target_language, result)
 
-        tables = response.xpath('//div[@id=\'resultrecs\']/'
-                                'section[contains(normalize-space(@class), \'recordSet\')]/div')
-        logger.debug(tables)
-        logger.debug('Found {} results on {}'.format(len(tables), self.name))
+        return record
 
-        logger.debug(tables)
-        results = []
-        for record in (tables):
-            logger.info(record)
-            # create a new record
-            rec = RecordLoader(Record(), selector=record)
-            rec.add_value('website', self.name)
-            rec.add_value('domain', self.get_domains(record)),
-            rec.add_value('source_language',self.source_language),
-            rec.add_value('target_language', self.target_language),
-            rec.add_value('terms', self.get_terms(record, self.source_language)),
-            rec.add_value('translations', self.get_terms(record, self.target_language)),
-
-            logger.info(rec)
-
-            results.append(record)
-
-            yield rec.load_item()
-
-    def get_domains(self, record):
+    def get_domains(self, result):
         '''
         :param record: a SelectorList from main results table ('tables' in parse() )
         :return: a list of strings of every dom  ain included in the record
         '''
-        return record.xpath('div[@class=\'col-md-4\']/section/div/section[@lang=\'en\']'
-                            '/div/ul//li[@class=\'small\']'
-                            ).xpath('normalize-space(.)').extract()
+        domains_list = result.xpath('div[@class=\'col-md-4\']/section/div/section[@lang=\'en\']'
+                            '/div/ul//li[@class=\'small\']')
 
-    def get_terms(self, record, language):
+        return [domain.xpath('normalize-space(.)') for domain in domains_list]
 
-        results_list = []
+    def get_terms(self, language, result):
+
+        terms = []
 
         # clean up the useless content, everything from " \xa0" on should be removed
-        for result in record.xpath('div[@class=\'col-md-4\']/section/div/div[@lang=\'{}\']/ul'
-                              '/li[contains(@class,\'text-primary\')]'.format(language)
-                              ).xpath('normalize-space(.)').extract():
+        for term in result.xpath('div[@class=\'col-md-4\']/section/div/div[@lang=\'{}\']/ul'
+                                   '/li[contains(@class,\'text-primary\')]'.format(language)):
 
-            results_list.append(result[:result.index('\xa0')-1])
+            term = term.xpath('normalize-space(.)')
+            terms.append(term[:term.index('\xa0') - 1])
 
-        return results_list
+        return terms
+
+    def parse (self, response):
+
+        html_tree = html.fromstring(response.content)
+
+        results_list = html_tree.xpath('//div[@id=\'resultrecs\']/'
+                                'section[contains(normalize-space(@class), \'recordSet\')]/div')
+
+        for result in results_list:
+
+            yield self.create_record(result)

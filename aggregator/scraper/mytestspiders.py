@@ -26,6 +26,9 @@ class GenericSpider(object):
 
         return results_list
 
+    def parse(self, response):
+        pass
+
 
 class IateSpider(GenericSpider):
 
@@ -49,7 +52,7 @@ class IateSpider(GenericSpider):
 
         for result_table in results_list:
             result = result_table.xpath('./tr')
-            yield self.get_record(result)
+            yield self.create_record(result)
 
         # crawl the next page if more than 10 results
         for f in html_tree.xpath('//div[@id="searchResultFooter"]//*'):
@@ -59,10 +62,7 @@ class IateSpider(GenericSpider):
                 next_page = ''.join(f.xpath('normalize-space(./@href)'))
                 yield self.parse(next_page)
 
-
-
-
-    def get_record(self, result):
+    def create_record(self, result):
 
         record = dict()
 
@@ -92,7 +92,6 @@ class IateSpider(GenericSpider):
         text = text[:text.index('[')-1]
         domains = text.split(', ')
         return domains
-
 
     def get_terms_and_translations(self, result):
         """
@@ -147,10 +146,10 @@ class ProzSpider(GenericSpider):
 
         for result in results_list:
 
-            yield self.get_record(result)
+            yield self.create_record(result)
 
 
-    def get_record(self, result):
+    def create_record(self, result):
 
         record = dict()
 
@@ -196,3 +195,63 @@ class ProzSpider(GenericSpider):
         domain = self.sanitize_result_string(domain)
 
         return domain.split('>')
+
+
+class TermiumSpider (GenericSpider):
+
+    def __init__(self, keywords, source_language, target_language, *args, **kwargs):
+        super().__init__(keywords, source_language, target_language, *args, **kwargs)
+        # 'keywords' inherited from GenericSpider
+        # termium uses 2 digits language codes 'en', 'fr, 'it' etc
+        self.source_language = source_language.code2d
+        self.target_language = target_language.code2d
+
+        self.url = 'http://www.btb.termiumplus.gc.ca/tpv2alpha/' \
+                         'alpha-eng.html?lang=eng&srchtxt={}'.format(keywords)
+
+    def create_record(self, result):
+
+        record = dict()
+
+        record['website'] = "proz"
+        record['source_language'] = self.source_language
+        record['target_language'] = self.target_language
+        record['domain'] = self.get_domains(result)
+        record['terms']  = self.get_terms(self.source_language, result)
+        record['translations'] = self.get_terms(self.target_language, result)
+
+        return record
+
+    def get_domains(self, result):
+        '''
+        :param record: a SelectorList from main results table ('tables' in parse() )
+        :return: a list of strings of every dom  ain included in the record
+        '''
+        domains_list = result.xpath('div[@class=\'col-md-4\']/section/div/section[@lang=\'en\']'
+                            '/div/ul//li[@class=\'small\']')
+
+        return [domain.xpath('normalize-space(.)') for domain in domains_list]
+
+    def get_terms(self, language, result):
+
+        terms = []
+
+        # clean up the useless content, everything from " \xa0" on should be removed
+        for term in result.xpath('div[@class=\'col-md-4\']/section/div/div[@lang=\'{}\']/ul'
+                                   '/li[contains(@class,\'text-primary\')]'.format(language)):
+
+            term = term.xpath('normalize-space(.)')
+            terms.append(term[:term.index('\xa0') - 1])
+
+        return terms
+
+    def parse (self, response):
+
+        html_tree = html.fromstring(response.content)
+
+        results_list = html_tree.xpath('//div[@id=\'resultrecs\']/'
+                                'section[contains(normalize-space(@class), \'recordSet\')]/div')
+
+        for result in results_list:
+
+            yield self.create_record(result)
