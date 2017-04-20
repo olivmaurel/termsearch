@@ -18,6 +18,41 @@ def home_page(request):
     template = loader.get_template('aggregator/index.html')
     return HttpResponse(template.render())
 
+def mytestsearch(request):
+
+    if request.method == 'POST':
+        form = SearchForm(request.POST)
+        if form.is_valid():
+
+            search_queryset = Search.objects.none()
+
+            for website in form.get_all_websites():
+
+                search, search_not_in_db = Search.objects.get_or_create(
+                                        keywords=form.cleaned_data['keywords'],
+                                        source_language = form.cleaned_data['source_language'],
+                                        target_language = form.cleaned_data['target_language'],
+                                        website = website,
+                                        )
+                search.domains.add(1) # todo implement manytomany domains
+                logger.info("{} \n New search:{}".format(search, search_not_in_db))
+
+                if search_not_in_db:
+                    page_results = search.get_records()
+                    search.save_results_in_db(page_results)
+
+                search_queryset = search_queryset | search.record_set.all()
+
+            context = {
+                "queryset": search_queryset,
+                "form": form
+                }
+
+            return render(request, 'aggregator/search_results.html', context)
+    else:
+        form = SearchForm()
+        return render(request, 'aggregator/search_home.html', locals())
+
 def term_search(request):
 
     if request.method == 'POST':

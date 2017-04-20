@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^streamer$', views.streamer, name='streamer'),
     url(r'^simplestreamer$', views.simplestreamer, name='simplestreamer'), # todo remove after testing
     url(r'^normalhttp$', views.normal_httpresponse, name='normalhttp'),
+    url(r'^mytestsearch$', views.mytestsearch, name='mytestsearch'),
     # url(r'^results$', views.crawler_results, name='results'),
     url(r'^ckeditor/', include('ckeditor_uploader.urls')),
 ]

@@ -1,10 +1,11 @@
+import requests
 import scrapydo
 from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils import timezone
 
 from aggregator.scraper.spiders import *
-
+from aggregator.scraper.mytestspiders import *
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ class Term(models.Model):
 
 
 class Search(models.Model):
+
     DEFAULT_PK = 1
     keywords = models.CharField(max_length=100)
     date = models.DateTimeField(default=timezone.now)
@@ -63,21 +65,21 @@ class Search(models.Model):
     def __str__(self):
         return "\"{}\" ({} > {}) on {}".format(self.keywords, self.source_language, self.target_language, self.website)
 
-    def get_or_create_manytomanys(self, record):
+    def get_or_create_manytomanys(self, page_record):
         terms, translations, domains = [], [], []
 
-        # for each term in a record, get or create in db, append to terms list
-        for term in record['terms']:
+        # for each term in a page_record, get or create in db, append to terms list
+        for term in page_record['terms']:
             t, created = Term.objects.get_or_create(name=term, language=self.source_language)
             terms.append(t)
             logger.debug("term : {}\n created : {} \n".format(term, created))
-        # for each translation in a record, get or create in db, append to translations list
-        for translation in record['translations']:
+        # for each translation in a page_record, get or create in db, append to translations list
+        for translation in page_record['translations']:
             t, created = Term.objects.get_or_create(name=translation, language=self.target_language)
             logger.debug("translation : {}\n created : {} \n".format(translation, created))
             translations.append(t)
-        # for each domain in a record
-        for domain in record['domain']:
+        # for each domain in a page_record
+        for domain in page_record['domain']:
             dom, created = Domain.objects.get_or_create(name=domain)
             logger.debug("domain: {}\n created : {}".format(domain, created))
             domains.append(dom)
@@ -100,31 +102,43 @@ class Search(models.Model):
             'target_language': self.target_language
         }
 
-        spider_results = scrapydo.run_spider(self.get_spider(search_parameters), **search_parameters)
-
+        spider_results = scrapydo.run_spider(self.get_spider_with_args(search_parameters), **search_parameters)
+        # todo delete this method when scrapy is deleted
         return spider_results
 
+    def get_records(self):
 
-    def get_spider(self, search_parameters):
+        spider = self.get_spider()
+
+        page_results = []
+        response = requests.get(spider.url)
+        for record in spider.parse(response):
+            page_results.append(record)
+
+        return page_results
+
+    def get_spider(self):
+        search_parameters = {
+            'keywords': self.keywords,
+            'source_language': self.source_language,
+            'target_language': self.target_language
+        }
         # todo test dict performance versus elif switch-like statement
         return {'iate': IateSpider(**search_parameters),
                 'proz': ProzSpider(**search_parameters),
                 'termium': TermiumSpider(**search_parameters)}[self.website.name.lower()]
 
-    def save_results_in_db(self, spider):
-        '''
-        :param search: django.models.Search
-        :param spider: scrapydo spider
-        :return: a list of django.models.Record objects
-        '''
-        django_records = []
+    def get_spider_with_args(self, search_parameters):
 
-        # for each record in results
-        for spider_result in spider:
-            # create a new django.models.Record, and add it to the list
-            django_records.append(self.create_record(spider_result))
+        return {'iate': IateSpider(**search_parameters),
+                'proz': ProzSpider(**search_parameters),
+                'termium': TermiumSpider(**search_parameters)}[self.website.name.lower()]
 
-        return django_records
+    def save_results_in_db(self, page_results):
+
+        for record in page_results:
+            self.create_record(record)
+
 
     def create_record(self, record):
         '''
