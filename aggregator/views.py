@@ -107,7 +107,7 @@ def normal_httpresponse(request): # todo remove after testing
 
 def simplestreamer(request):
 
-    import requests
+
     from itertools import chain
 
     search_parameters = {'keywords': 'computer',
@@ -118,11 +118,7 @@ def simplestreamer(request):
     termium = TermiumSpider(**search_parameters)
     proz = ProzSpider(**search_parameters)
 
-    results = chain(proz.parse(requests.get(proz.url)),
-                    iate.parse(requests.get(iate.url)),
-                    streaming_basictest(),
-                    termium.parse(requests.get(termium.url))
-                    ) #
+    results = chain(iate.parse(), termium.parse(), proz.parse())
 
     return StreamingHttpResponse(results)
 
@@ -139,7 +135,7 @@ def use_scrapy_with_downloader(stream):
 
     spider = IateSpider (**search_parameters)
 
-    request = scrapy.Request (url=spider.remoteurl)
+    request = scrapy.Request(url=spider.remoteurl)
 
     response = spider.crawler.engine.download(request, spider)
 

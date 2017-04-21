@@ -43,12 +43,31 @@ def termium_tester():
 
 def streamer_tester():
 
-    from itertools import chain
 
-    search_parameters = {'keywords': 'computer',
+
+    search_parameters = {'keywords': test_keyword,
                          'source_language': Language.objects.get(code2d='en'),
                          'target_language': Language.objects.get(code2d='fr')}
 
     proz = ProzSpider(**search_parameters)
+    response = requests.get(proz.url)
+    return [result for result in proz.parse(response)]
 
-    return proz.parse(requests.get(proz.url))
+
+###
+from aggregator.models import Language
+from aggregator.scraper.spiders import *
+import requests
+from itertools import chain
+
+
+search_parameters = {'keywords': 'computer',
+                         'source_language': Language.objects.get(code2d='en'),
+                         'target_language': Language.objects.get(code2d='fr')}
+iate = IateSpider(**search_parameters)
+termium = TermiumSpider(**search_parameters)
+proz = ProzSpider(**search_parameters)
+
+results = chain(proz.parse()) # , termium.parse(), proz.parse()
+
+print ([result for result in results])

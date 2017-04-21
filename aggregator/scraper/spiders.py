@@ -1,6 +1,7 @@
 import logging
 import json
 from lxml import html
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -17,15 +18,23 @@ class GenericSpider(object):
 
         return text.replace('\xa0', '').replace('\"', '')
 
-    def get_results_as_list(self, response):
+    def get_results_as_list(self):
 
         results_list = []
 
-        for record in self.parse(response):
+        for record in self.parse():
             results_list.append(record)
 
         return results_list
 
+    def get_html_tree(self, response):
+
+        return html.fromstring(response.content)
+
+    def get_page_results(self, response, xpath):
+
+        html_tree = self.get_html_tree(response)
+        return  html_tree.xpath(xpath)
 
 class IateSpider(GenericSpider):
 
@@ -41,23 +50,31 @@ class IateSpider(GenericSpider):
                     '&targetLanguages={}&domain=0' \
                     '&matching=&typeOfSearch=s'.format(self.keywords, self.source_language, self.target_language)
 
-    def parse(self, response):
+    def parse(self, url=None):
 
-        html_tree = html.fromstring(response.content)
+        if url is None:
+            url = self.url
 
-        results_list = html_tree.xpath('//div[@id="searchResultBody"]/table')
+        response = requests.get(url)
 
-        for result_table in results_list:
+        page_results = self.get_page_results(response, '//div[@id="searchResultBody"]/table')
+
+        for result_table in page_results:
             result = result_table.xpath('./tr')
-            yield self.create_record(result)
+
+            record = self.create_record(result)
+
+            if record is not None:
+                yield record
 
         # crawl the next page if more than 10 results
-        for f in html_tree.xpath('//div[@id="searchResultFooter"]//*'):
-            res = f.xpath('normalize-space(.)')
-            if res == ['>']:
-                # todo: crawl every page when more than 10 pages
-                next_page = ''.join(f.xpath('normalize-space(./@href)'))
-                yield self.parse(next_page)
+        # for f in html_tree.xpath('//div[@id="searchResultFooter"]//*'):
+        #    res = f.xpath('normalize-space(.)')
+        #    if res == ['>']:
+        #        # todo: crawl every page when more than 10 pages
+        #        next_page = ''.join(f.xpath('normalize-space(./@href)'))
+        #        yield self.parse(next_page) # todo fix the next_page crawler
+
 
     def create_record(self, result):
 
@@ -73,7 +90,7 @@ class IateSpider(GenericSpider):
         # then, every following tr is a translation term
         record['domain'] = self.get_domains(result)
         record['terms'], record['translations'] = self.get_terms_and_translations(result)
-
+        print(record)
         return record
 
     def get_domains(self, result):
@@ -136,13 +153,14 @@ class ProzSpider(GenericSpider):
                             'search_params[bidirectional]': 'true',
                             'search_params[results_per_page]': '100'}
 
-    def parse(self, response):
+    def parse(self):
 
-        html_tree = html.fromstring(json.loads(response.text)['html'])
+        response = requests.post(self.url, data=self.formdata)
 
-        results_list = html_tree.xpath('//tbody[@class=\'search_result_body\']/tr/td[4]')
+        page_results = self.get_page_results(response,
+                                             '//tbody[@class=\'search_result_body\']/tr/td[4]')
 
-        for result in results_list:
+        for result in page_results:
 
             yield self.create_record(result)
 
@@ -165,6 +183,13 @@ class ProzSpider(GenericSpider):
         translations = result.xpath('normalize-space(string(./a[2]))')
 
         return terms, translations
+
+
+    def get_page_results(self, response, xpath):
+
+        html_tree = html.fromstring(json.loads(response.text)['html'])
+
+        return html_tree.xpath(xpath)
 
     def get_domains(self, result):
         """
@@ -243,13 +268,14 @@ class TermiumSpider (GenericSpider):
 
         return terms
 
-    def parse (self, response):
+    def parse(self):
 
-        html_tree = html.fromstring(response.content)
+        response = requests.get(self.url)
 
-        results_list = html_tree.xpath('//div[@id=\'resultrecs\']/'
-                                'section[contains(normalize-space(@class), \'recordSet\')]/div')
+        page_results = self.get_page_results(response,
+                                             '//div[@id=\'resultrecs\']/'
+                                             'section[contains(normalize-space(@class), \'recordSet\')]/div')
 
-        for result in results_list:
+        for result in page_results:
 
             yield self.create_record(result)
