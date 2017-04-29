@@ -71,3 +71,24 @@ proz = ProzSpider(**search_parameters)
 results = chain(proz.parse()) # , termium.parse(), proz.parse()
 
 print ([result for result in results])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

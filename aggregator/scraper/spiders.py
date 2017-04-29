@@ -1,5 +1,6 @@
 import logging
 import json
+import time
 from lxml import html
 import requests
 
@@ -65,6 +66,24 @@ class IateSpider(GenericSpider):
             record = self.create_record(result)
 
             if record is not None:
+                yield record
+
+    def parse_timer(self, url=None):
+
+        if url is None:
+            url = self.url
+
+        response = requests.get(url)
+
+        page_results = self.get_page_results(response, '//div[@id="searchResultBody"]/table')
+
+        for result_table in page_results:
+            result = result_table.xpath('./tr')
+
+            record = self.create_record(result)
+
+            if record is not None:
+                time.sleep(1)
                 yield record
 
         # crawl the next page if more than 10 results
