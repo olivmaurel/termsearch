@@ -1,6 +1,5 @@
-import io
 import logging
-import time
+import os
 
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
@@ -12,6 +11,10 @@ from .models import Search, Website
 from .scraper.spiders import IateSpider, TermiumSpider, ProzSpider
 from aggregator.models import Language
 # Get an instance of a logger
+from itertools import chain
+from jinja2 import Environment, FileSystemLoader
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger(__name__)
 
 def home_page(request):
@@ -56,6 +59,49 @@ def term_search(request):
         form = SearchForm()
         return render(request, 'aggregator/search_home.html', locals())
 
+
+
+def jinjaterm_search(request):
+
+    if request.method == 'POST':
+        form = SearchForm(request.POST)
+        if form.is_valid():
+
+            search_parameters = get_search_parameters(form)
+            results = chain()
+            # for each website corresponding to the language pair
+            for website in form.get_all_websites():
+                # add the website.parse() to the chain
+                results.append()
+
+            context = {'my_list': [1, 2, 3, 4, 5], 'my_string': 'goddamit', 'records': results}
+
+            return stream_http_with_jinja2_template('jinja2/streamer.html', context)
+
+    else: # method='GET' or form is not valid
+        form = SearchForm()
+        return render(request, 'aggregator/search_home.html', locals())
+
+
+
+
+def get_search_parameters(form):
+
+    search_parameters = {'keywords': form.cleaned_data['keywords'],
+                         'source_language': form.cleaned_data['source_language'],
+                         'target_language': form.cleaned_data['target_language'] }
+
+    return search_parameters
+
+def scrape_results():
+    return ''
+
+def stream_http_with_jinja2_template(template, context):
+
+    path = THIS_DIR + '/templates/'
+    j2_env = Environment(loader=FileSystemLoader(path), trim_blocks=True)
+
+    return StreamingHttpResponse(j2_env.get_template(template).generate(context))
 
 class WebsiteListView(ListView):
 

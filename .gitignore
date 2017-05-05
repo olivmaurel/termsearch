@@ -2,12 +2,12 @@
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
-*$py.class
-*.pyc
 
 # C extensions
 *.so
+
+# pycharm files
+.idea
 
 # Distribution / packaging
 .Python
@@ -107,7 +107,6 @@ tags
 ## Emacs
 
 # -*- mode: gitignore; -*-
-*~
 \#*\#
 /.emacs.desktop
 /.emacs.desktop.lock
@@ -180,10 +179,8 @@ sftp-config.json
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff:
-.idea/workspace.xml
 .idea/tasks.xml
 .idea/dictionaries
-.idea/vcs.xml
 .idea/jsLibraryMappings.xml
 
 # Sensitive or high-churn files:
@@ -223,8 +220,6 @@ fabric.properties
 
 
 ## Linux 
-
-*~
 
 # temporary files which can be created if a process still has a handle open
 # of a deleted file
@@ -291,7 +286,6 @@ $RECYCLE.BIN/
 
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
-.Python
 [Bb]in
 [Ii]nclude
 [Ll]ib

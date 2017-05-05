@@ -1,11 +1,14 @@
 ## jinja tester
 from aggregator.models import Language
 from aggregator.scraper.spiders import *
-import requests
 from itertools import chain
-from django.http import HttpResponse, StreamingHttpResponse
-import jinja2
-from jinja2 import BaseLoader, TemplateNotFound
+from django.http import StreamingHttpResponse
+from jinja2 import Environment, FileSystemLoader, Template
+
+import os
+
+# Capture our current directory
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 search_parameters = {'keywords': 'computer',
                          'source_language': Language.objects.get(code2d='en'),
@@ -20,20 +23,19 @@ results = chain(proz.parse(), termium.parse(), proz.parse())
 
 context = {'my_list':[1,2,3,4,5], 'my_string':'goddamit', 'records': results}
 
-filename = 'jinja2/streamer.html'
-env = jinja2.Environment()
-template = jinja2.Template(filename)
+env = Environment()
 
-rendered = template.render(**context)
+localdir = '/home/olivier/pythonstuff/projects/termsearch/aggregator/templates/jinja2/'
 
-
+filename = 'streamer.html'
 
 ####
 def mytest():
 
     context = {'my_list': [1, 2, 3, 4, 5], 'my_string': 'goddamit', 'records': results}
-    env = jinja2.Environment()
-    loader = jinja2.FileSystemLoader(filename)
+    j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
+    loader = FileSystemLoader(filename)
     template = env.get_template(loader)
     stream = template.generate(context)
     return StreamingHttpResponse(stream)
+

@@ -1,16 +1,18 @@
 import io
 import logging
 import time
-
+import os
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
-from django.template import loader
-from django.views.generic.list import ListView
 
+from jinja2 import Environment, FileSystemLoader
+from itertools import chain
 from .forms import SearchForm
-from .models import Search, Website
+from .models import Search, Language
 from .scraper.spiders import IateSpider, TermiumSpider, ProzSpider
-from aggregator.models import Language
+from .views import stream_http_with_jinja2_template
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -48,8 +50,6 @@ def simplestreamer(request):
 
 def jinja_tester(request):
 
-    from itertools import chain
-    import jinja2
     search_parameters = {'keywords': 'lectin',
                          'source_language': Language.objects.get(code2d='en'),
                          'target_language': Language.objects.get(code2d='fr')}
@@ -62,7 +62,12 @@ def jinja_tester(request):
 
     context = {'my_list':[1,2,3,4,5], 'my_string':'goddamit', 'records': results}
 
-    return render(request, 'jinja2/streamer.html', context)
+    return stream_http_with_jinja2_template('jinja2/streamer.html', context)
+    # return render(request, 'jinja2/streamer.html', context)
+
+
+
+
 
 def use_scrapy_with_downloader(stream):
     # dfd = spider.crawler.engine.download(request, spider)

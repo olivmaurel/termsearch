@@ -107,7 +107,7 @@ class Search(models.Model):
         return spider_results
 
     def get_records(self):
-
+        # dont use this # todo delete this method
         spider = self.get_spider()
 
         page_results = []
