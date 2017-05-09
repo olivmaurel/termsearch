@@ -1,11 +1,9 @@
-import requests
-import scrapydo
 from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils import timezone
 
+from aggregator.spiders import *
 
-from aggregator.scraper.spiders import *
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 

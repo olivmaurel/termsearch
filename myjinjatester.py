@@ -1,11 +1,12 @@
 ## jinja tester
-from aggregator.models import Language
-from aggregator.scraper.spiders import *
-from itertools import chain
-from django.http import StreamingHttpResponse
-from jinja2 import Environment, FileSystemLoader, Template
-
 import os
+from itertools import chain
+
+from django.http import StreamingHttpResponse
+from jinja2 import Environment, FileSystemLoader
+
+from aggregator.models import Language
+from aggregator.spiders import *
 
 # Capture our current directory
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -32,8 +33,6 @@ filename = 'streamer.html'
 #######################
 
 from aggregator.models import Language
-from aggregator.scraper.spiders import *
-from itertools import chain
 from aggregator.forms import SearchForm
 
 searchform = SearchForm()

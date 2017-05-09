@@ -1,38 +1,24 @@
 import io
 import logging
-import time
 import os
-from django.http import HttpResponse, StreamingHttpResponse
+import time
+from itertools import chain
+
+from django.http import StreamingHttpResponse
 from django.shortcuts import render
 
-from jinja2 import Environment, FileSystemLoader
-from itertools import chain
+from aggregator.spiders import IateSpider, TermiumSpider, ProzSpider
 from .forms import SearchForm
 from .models import Search, Language
-from .scraper.spiders import IateSpider, TermiumSpider, ProzSpider
 from .views import stream_http_with_jinja2_template
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 
-def normal_httpresponse(request): # todo remove after testing
-    import scrapydo
-    from aggregator.scraper.scrapy_spiders import IateSpider
-
-
-    scrapydo.setup()
-
-    search_parameters = {'keywords': 'computer',
-                         'source_language': Language.objects.get(code2d='en'),
-                         'target_language': Language.objects.get(code2d='fr')}
-
-    return HttpResponse(scrapydo.run_spider(IateSpider(**search_parameters), yield_items=True, capture_items=False,
-                            **search_parameters))
-
 def simplestreamer(request):
-
 
     from itertools import chain
 
@@ -76,53 +62,6 @@ def fix_the_template_mess(request):
     context = {'my_list': [1, 2, 3, 4, 5], 'my_string': 'goddamit', 'records': results}
     # render it in a basic crude template
     return stream_http_with_jinja2_template('fixit/streamer.html', context)
-
-
-
-def use_scrapy_with_downloader(stream):
-    # dfd = spider.crawler.engine.download(request, spider)
-    import scrapy
-    from aggregator.scraper.scrapy_spiders import IateSpider
-    from aggregator.models import Language
-
-    search_parameters = {'keywords': 'boilerplate',
-                         'source_language': Language.objects.get(code2d='en'),
-                         'target_language': Language.objects.get(code2d='fr')}
-
-    spider = IateSpider (**search_parameters)
-
-    request = scrapy.Request(url=spider.remoteurl)
-
-    response = spider.crawler.engine.download(request, spider)
-
-    return IateSpider.parse(response)
-
-
-
-def streaming_spider(stream):
-
-    import scrapydo
-    from scrapy import signals
-    from aggregator.scraper.scrapy_spiders import IateSpider
-    from aggregator.models import Language
-
-    scrapydo.setup()
-
-    def item_passed(item):
-        stream._set_streaming_content(item)
-
-    def spider_closed():
-        stream.close()
-
-    def setup_crawler(crawler):
-        crawler.signals.connect(signals.item_passed, item_passed)
-        crawler.signals.connect(signals.spider_closed, spider_closed)
-
-    search_parameters = {'keywords': 'boilerplate',
-                         'source_language': Language.objects.get(code2d='en'),
-                         'target_language': Language.objects.get(code2d='fr')}
-
-    scrapydo.run_spider(IateSpider(**search_parameters), capture_items=False, **search_parameters)
 
 
 def streaming_io():

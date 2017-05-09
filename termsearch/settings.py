@@ -155,7 +155,7 @@ LOGGING = {
         'development_logfile': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/tmp/django_dev.log',
+            'filename': os.path.join(BASE_DIR, 'logs/django_dev.log'),
             'filters': ['require_debug_true'],
             'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 50,
@@ -166,7 +166,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'filters': ['require_debug_false'],
-            'filename': 'django_production.log',
+            'filename': os.path.join(BASE_DIR,'logs/django_production.log'),
             'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 50,
             'formatter': 'simple',
@@ -175,7 +175,7 @@ LOGGING = {
         'dba_logfile': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/tmp/django_dba.log',
+            'filename': os.path.join(BASE_DIR,'logs/django_dba.log'),
             'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 50,
             'formatter': 'verbose',
@@ -185,7 +185,7 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filters': ['require_debug_false'],
-            'filename': 'django_security.log',
+            'filename': os.path.join(BASE_DIR, 'logs/django_security.log'),
             'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 50,
             'formatter': 'verbose',

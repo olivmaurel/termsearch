@@ -3,8 +3,8 @@ import logging
 from django import forms
 from django.db.models import Q
 
+from aggregator import spiders
 from .models import Language, Website
-from aggregator.scraper import spiders
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
