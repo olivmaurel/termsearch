@@ -14,7 +14,7 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+JINJA2_DIR = os.path.join(BASE_DIR, 'templates/jinja2')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -55,8 +55,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.jinja2.Jinja2',
         'DIRS': [
-            os.path.join(BASE_DIR, '/jinja2/'),
-            BASE_DIR
+            JINJA2_DIR,
         ],
         'APP_DIRS': True,
         'OPTIONS': {

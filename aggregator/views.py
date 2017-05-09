@@ -7,6 +7,8 @@ from django.template import loader
 from django.views.generic.list import ListView
 # Get an instance of a logger
 from jinja2 import Environment, FileSystemLoader
+from termsearch.settings import JINJA2_DIR
+
 
 from .forms import SearchForm
 from .models import Website
@@ -46,8 +48,7 @@ def term_search(request):
 
 def stream_http_with_jinja2_template(template, context):
 
-    path = THIS_DIR + '/templates/'
-    j2_env = Environment(loader=FileSystemLoader(path), trim_blocks=True)
+    j2_env = Environment(loader=FileSystemLoader(JINJA2_DIR), trim_blocks=True)
 
     return StreamingHttpResponse(j2_env.get_template(template).generate(context))
 

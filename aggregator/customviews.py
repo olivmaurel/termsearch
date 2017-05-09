@@ -55,8 +55,7 @@ def jinja_tester(request):
 def fix_the_template_mess(request):
 
     # todo get the static directory right
-    # use the correct path for the jinja2 templates : termsearch/jinja2/aggregator
-    # 'jinja2' should replace 'template' as the top folder
+    # use the correct path for the jinja2 templates
     # use the most basic context
     results = slow_response_for_testing_streaming(5)
     context = {'my_list': [1, 2, 3, 4, 5], 'my_string': 'goddamit', 'records': results}

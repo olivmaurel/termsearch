@@ -84,25 +84,6 @@ class Search(models.Model):
 
         return terms, translations, domains
 
-    def get_records_from_scrapy(self):
-        """
-        The twited Reactor used by scrapy doesn't work well with WSGI/Django, so Scrapydo is needed
-        to call scrapy more than once and get the scraping results as a list of scrapy.items.record objects
-
-        """
-        scrapydo.setup()
-
-        logger.debug("Now sending HTTP request to get results from {}".format(self.website))
-
-        search_parameters = {
-            'keywords': self.keywords,
-            'source_language': self.source_language,
-            'target_language': self.target_language
-        }
-
-        spider_results = scrapydo.run_spider(self.get_spider_from_scrapy(search_parameters), **search_parameters)
-        # todo delete this method when scrapy is deleted
-        return spider_results
 
     def get_records(self):
         # dont use this # todo delete this method
@@ -126,14 +107,6 @@ class Search(models.Model):
                 'proz': ProzSpider(**search_parameters),
                 'termium': TermiumSpider(**search_parameters)}[self.website.name.lower()]
 
-    def get_spider_from_scrapy(self, search_parameters):
-
-        from aggregator.scraper import scrapy_spiders
-
-        return {'iate': scrapy_spiders.IateSpider(**search_parameters),
-                'proz': scrapy_spiders.ProzSpider(**search_parameters),
-                'termium': scrapy_spiders.TermiumSpider(**search_parameters)}[self.website.name.lower()]
-
     def save_results_in_db(self, page_results):
 
         for record in page_results:
@@ -143,7 +116,6 @@ class Search(models.Model):
     def create_record(self, record):
         '''
         :param search: django.models.Search
-        :param record: scrapy.items.Record
         :return: django.models.Record
         creates a new Record object using Record.objects.create()
         adds terms and translations as a list (Manytomany
