@@ -149,7 +149,7 @@ class ProzSpider(GenericSpider):
 
     def parse(self, response):
 
-        formdata = {'action': 'term_search',
+        formdata = {'action': 'scrapy_term_search',
                     'search_params[term]': self.keywords,
                     'search_params[from]': self.source_language,
                     'search_params[to]': self.target_language,

@@ -131,7 +131,7 @@ class ProzSpider(GenericSpider):
         self.source_language = source_language.code3d
         self.target_language = target_language.code3d
         self.url = 'http://www.proz.com/ajax/ajax_search.php'
-        self.formdata = {   'action': 'term_search',
+        self.formdata = {   'action': 'scrapy_term_search',
                             'search_params[term]': self.keywords,
                             'search_params[from]': self.source_language,
                             'search_params[to]': self.target_language,

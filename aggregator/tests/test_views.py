@@ -2,7 +2,7 @@ from django.core.urlresolvers import resolve
 from django.http import HttpRequest
 from django.test import TestCase
 
-from aggregator.views import term_search, home_page
+from aggregator.views import scrapy_term_search, home_page
 
 
 class HomePageTest(TestCase):

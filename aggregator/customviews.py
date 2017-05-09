@@ -66,6 +66,16 @@ def jinja_tester(request):
     # return render(request, 'jinja2/streamer.html', context)
 
 
+def fix_the_template_mess(request):
+
+    # todo get the static directory right
+    # use the correct path for the jinja2 templates : termsearch/jinja2/aggregator
+    # 'jinja2' should replace 'template' as the top folder
+    # use the most basic context
+    results = slow_response_for_testing_streaming(5)
+    context = {'my_list': [1, 2, 3, 4, 5], 'my_string': 'goddamit', 'records': results}
+    # render it in a basic crude template
+    return stream_http_with_jinja2_template('fixit/streamer.html', context)
 
 
 
@@ -125,11 +135,11 @@ def streaming_io():
     return stream.read()
 
 
-def streaming_basictest():
+def slow_response_for_testing_streaming(delay):
 
-    for i in range(3):
+    for i in range(delay):
         time.sleep(1)
-        yield "{}<br/>".format(i)
+        yield "Wew that's taking a while, hold on .... {}<br/>".format(delay)
 
 
 def mytestsearch(request):

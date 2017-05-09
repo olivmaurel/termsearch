@@ -4,6 +4,7 @@ from django import forms
 from django.db.models import Q
 
 from .models import Language, Website
+from aggregator.scraper import spiders
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -49,3 +50,23 @@ class SearchForm(forms.Form):
             return website_list
         else:
             return Website.objects.none()
+
+    def get_search_parameters(self):
+
+        if self.is_valid():
+            return {'keywords': self.cleaned_data['keywords'],
+                'source_language': self.cleaned_data['source_language'],
+                'target_language': self.cleaned_data['target_language']}
+        else:
+            return {'keywords': 'Form is not valid',
+                'source_language': '',
+                'target_language': ''}
+
+    def get_spider(self, Website):
+
+        search_parameters = self.get_search_parameters()
+
+        # todo test dict performance versus elif switch-like statement
+        return {'iate': spiders.IateSpider(**search_parameters),
+                'proz': spiders.ProzSpider(**search_parameters),
+                'termium': spiders.TermiumSpider(**search_parameters)}[Website.name.lower()]

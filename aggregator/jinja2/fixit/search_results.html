@@ -1,4 +1,4 @@
-{% extends "jinja2/layout.html" %}
+{% extends "jinja2/base.html" %}
 {% block content %}
   <h3> This is the start of my child template</h3>
   <br>
@@ -11,8 +11,8 @@
     {% endfor %}
   </ul>
   <ul>
-    {% for record in records %}
-    <li>{{record}}</li>
+    {% for result in results %}
+    <li>{{result}}</li>
     {% endfor %}
   </ul>
   <h3> This is the end of my child template</h3>

@@ -9,7 +9,7 @@ def print_html_doc():
     # Notice the use of trim_blocks, which greatly helps control whitespace.
     j2_env = Environment(loader=FileSystemLoader(THIS_DIR),
                          trim_blocks=True)
-    print (line for line in j2_env.get_template('aggregator/templates/jinja2/layout.html').generate(
+    print (line for line in j2_env.get_template('aggregator/templates/jinja2/basehtml').generate(
            title='Hellow Gist from GutHub'))
 
 

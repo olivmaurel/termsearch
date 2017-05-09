@@ -29,6 +29,28 @@ localdir = '/home/olivier/pythonstuff/projects/termsearch/aggregator/templates/j
 
 filename = 'streamer.html'
 
+#######################
+
+from aggregator.models import Language
+from aggregator.scraper.spiders import *
+from itertools import chain
+from aggregator.forms import SearchForm
+
+searchform = SearchForm()
+searchform.keywords = "computer"
+searchform.source_language = Language.objects.get(code2d='en')
+searchform.target_language = Language.objects.get(code2d='fr')
+searchform.is_bound = True
+
+
+
+
+########################
+
+
+
+
+
 ####
 def mytest():
 

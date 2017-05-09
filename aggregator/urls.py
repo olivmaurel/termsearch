@@ -4,12 +4,10 @@ from aggregator import views, customviews
 
 
 urlpatterns = [
-    url(r'^search$', views.term_search, name='term_search'),
+    url(r'^scrapysearch$', views.scrapy_term_search, name='scrapy_term_search'),
     url(r'^ressources$', views.WebsiteListView.as_view(), name='ressources'),
     url(r'^$', views.home_page, name='home'),
-    url(r'^simplestreamer$', customviews.simplestreamer, name='simplestreamer'), # todo remove after testing
-    url(r'^normalhttp$', customviews.normal_httpresponse, name='normalhttp'), # todo remove after testing
-    url(r'^mytestsearch$', customviews.mytestsearch, name='mytestsearch'), # todo remove after testing
-    url(r'^jinja$', customviews.jinja_tester, name='jinja'), # todo remove after testing
+    url(r'^search$', views.term_search, name='search'),
+    url(r'^anothertest$', customviews.fix_the_template_mess, name='anothertest'),
     url(r'^ckeditor/', include('ckeditor_uploader.urls')),
 ]
