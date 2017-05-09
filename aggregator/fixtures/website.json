@@ -1,0 +1,32 @@
+[
+  {
+    "model": "aggregator.website",
+    "pk": 1,
+    "fields": {
+      "name": "iate",
+      "homepage": "http://iate.europa.eu",
+      "search_url": "http://iate.europa.eu/SearchByQuery.do",
+      "languages": [1,2,3,4,5]
+    }
+  },
+  {
+    "model": "aggregator.website",
+    "pk": 2,
+    "fields": {
+      "name": "proz",
+      "homepage": "http://www.proz.com",
+      "search_url": "http://www.proz.com/search/",
+      "languages": [1,2,3,4,5]
+    }
+  },
+  {
+    "model": "aggregator.website",
+    "pk": 3,
+    "fields": {
+      "name": "termium",
+      "homepage": "http://www.btb.termiumplus.gc.ca/tpv2alpha/alpha-eng.html?lang=eng",
+      "search_url": "http://www.btb.termiumplus.gc.ca/tpv2alpha/alpha-eng.html",
+      "languages": [1,2,3]
+    }
+  }
+]
