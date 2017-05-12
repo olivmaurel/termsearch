@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-  {% load static %}
   <head>
     <title>Termsearch Aggregator</title>
     <meta charset="utf-8">
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" type="text/css" href="{% static 'aggregator/css/bootstrap.min.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'aggregator/css/style.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{{ static('aggregator/css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ static('aggregator/css/style.css') }}" />
 
     </head>
 <body>
@@ -35,7 +34,7 @@
 
 
 </body>
-<script src="{% static 'aggregator/js/jquery.min.js' %}" ></script>
-<script src="{% static 'aggregator/js/bootstrap.min.js' %}" ></script>
+<script src="{{ static('aggregator/js/jquery.min.js') }}" ></script>
+<script src="{{ static('aggregator/js/bootstrap.min.js') }}" ></script>
 
 </html>

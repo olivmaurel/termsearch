@@ -4,6 +4,7 @@ import os
 import time
 from itertools import chain
 
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.http import StreamingHttpResponse
 from django.shortcuts import render
 
@@ -18,44 +19,59 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger(__name__)
 
 
-def simplestreamer(request):
+def get_records(list_of_generators):
 
-    from itertools import chain
+    records = chain.from_iterable(list_of_generators)
+    return records
 
-    search_parameters = {'keywords': 'computer',
+def get_test_search_parameters(term):
+
+    search_parameters = {'keywords': term,
                          'source_language': Language.objects.get(code2d='en'),
                          'target_language': Language.objects.get(code2d='fr')}
 
-    iate = IateSpider(**search_parameters)
-    termium = TermiumSpider(**search_parameters)
-    proz = ProzSpider(**search_parameters)
-
-    results = chain(iate.parse(), termium.parse(), proz.parse())
-
-    return StreamingHttpResponse(results)
+    return search_parameters
 
 def jinja_tester(request):
 
-    search_parameters = {'keywords': 'lectin',
-                         'source_language': Language.objects.get(code2d='en'),
-                         'target_language': Language.objects.get(code2d='fr')}
+    search_parameters = get_test_search_parameters()
 
-    iate = IateSpider(**search_parameters)
     termium = TermiumSpider(**search_parameters)
     proz = ProzSpider(**search_parameters)
 
-    results = chain(iate.parse(), termium.parse(), proz.parse())
+    spiders_list = [proz.parse()]
 
-    context = {'my_list':[1,2,3,4,5], 'my_string':'goddamit', 'records': results}
+    records = get_records(spiders_list)
 
-    return stream_http_with_jinja2_template('jinja2/streamer.html', context)
-    # return render(request, 'jinja2/streamer.html', context)
+    context = {'my_list':[1,2,3,4,5], 'my_string': locals(), 'records': records, 'form':SearchForm()}
 
+    return stream_http_with_jinja2_template('aggregator/search_results.html', context)
+
+
+
+def proz_spider_tester(request, term):
+    search_parameters = get_test_search_parameters(term)
+    spider = ProzSpider(**search_parameters)
+
+    return StreamingHttpResponse(spider.parse())
+
+def iate_spider_tester(request, term):
+    search_parameters = get_test_search_parameters(term)
+    spider = IateSpider(**search_parameters)
+
+    return StreamingHttpResponse(spider.parse())
+
+def termium_spider_tester(request, term):
+    search_parameters = get_test_search_parameters(term)
+    spider = TermiumSpider(**search_parameters)
+
+    return StreamingHttpResponse(spider.parse())
 
 def fix_the_template_mess(request):
 
     # todo get the static directory right
     # use the correct path for the jinja2 templates
+    # 'jinja2' should replace 'template' as the top folder
     # use the most basic context
     results = slow_response_for_testing_streaming(5)
     context = {'my_list': [1, 2, 3, 4, 5], 'my_string': 'goddamit', 'records': results}

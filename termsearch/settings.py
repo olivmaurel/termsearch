@@ -15,6 +15,7 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JINJA2_DIR = os.path.join(BASE_DIR, 'templates/jinja2')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -54,8 +55,7 @@ ROOT_URLCONF = 'termsearch.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.jinja2.Jinja2',
-        'DIRS': [
-            JINJA2_DIR,
+        'DIRS': [ JINJA2_DIR,
         ],
         'APP_DIRS': True,
         'OPTIONS': {

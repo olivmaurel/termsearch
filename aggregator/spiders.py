@@ -166,7 +166,9 @@ class ProzSpider(GenericSpider):
         self.target_language = target_language.code3d
         self.name = "proz"
         self.url = 'http://www.proz.com/ajax/ajax_search.php'
-        self.formdata = {   'search_params[term]': self.keywords,
+
+        self.formdata = {   'action': 'term_search',
+                            'search_params[term]': self.keywords,
                             'search_params[from]': self.source_language,
                             'search_params[to]': self.target_language,
                             'search_params[bidirectional]': 'true',
@@ -207,7 +209,7 @@ class ProzSpider(GenericSpider):
     def get_page_results(self, response, xpath):
 
         html_tree = html.fromstring(json.loads(response.text)['html'])
-
+        print(json.loads(response.text)['html'])
         return html_tree.xpath(xpath)
 
     def get_domains(self, result):

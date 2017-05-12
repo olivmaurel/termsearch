@@ -8,10 +8,10 @@ from django.views.generic.list import ListView
 # Get an instance of a logger
 from jinja2 import Environment, FileSystemLoader
 from termsearch.settings import JINJA2_DIR
-
+from itertools import chain
 
 from .forms import SearchForm
-from .models import Website
+from .models import Website, Language
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger(__name__)
@@ -27,19 +27,23 @@ def term_search(request):
         form = SearchForm(request.POST)
         if form.is_valid():
 
-            # results = chain()
-            # for each website corresponding to the language pair
-            print('a')
-            # for website in form.get_all_websites():
+            spiders_list = []
+
+            for website in form.get_all_websites():
                 # add the website.parse() to the chain
 
-                #spider = form.get_spider(website)
-                # print(form.get_all_websites())
-                # print(form.get_search_parameters())
+                spider = form.get_spider(website)
+                print(form.get_all_websites())
+                print(form.get_search_parameters())
 
-            context = {'results': ['a', 'b', 'c']}
+                spiders_list.append(spider.parse())
 
-            return stream_http_with_jinja2_template('jinja2/search_results.html', context)
+
+
+            context = {'records': chain.from_iterable(spiders_list), 'form': SearchForm()}
+            context.update(locals())
+
+            return stream_http_with_jinja2_template('aggregator/search_results.html', context)
 
     else: # method='GET' or form is not valid
         form = SearchForm()
@@ -48,7 +52,8 @@ def term_search(request):
 
 def stream_http_with_jinja2_template(template, context):
 
-    j2_env = Environment(loader=FileSystemLoader(JINJA2_DIR), trim_blocks=True)
+    import termsearch.jinja2 as localj2
+    j2_env = localj2.environment(loader=FileSystemLoader(JINJA2_DIR), trim_blocks=True)
 
     return StreamingHttpResponse(j2_env.get_template(template).generate(context))
 

@@ -1,7 +1,7 @@
 {% block form %}
  <form class="nav navbar-form navbar-left form-inline"  action="/aggregator/search" method="post" role="search">
    <div class="form-group">
-        {% csrf_token %}
+
         {{ form.non_field_errors }}
 
         {{ form.source_language.errors }}
@@ -12,6 +12,7 @@
 
         {{ form.keywords.errors }}
         {{ form.keywords }}
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"/>
         <button type="submit" class="btn btn-default" id="search-button"><span class="glyphicon glyphicon-search"></span></button>
    </div>
  </form>

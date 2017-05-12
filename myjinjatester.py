@@ -20,15 +20,10 @@ proz = ProzSpider(**search_parameters)
 
 
 
-results = chain(proz.parse(), termium.parse(), proz.parse())
+results = chain(iate.parse(), termium.parse(), proz.parse())
 
-context = {'my_list':[1,2,3,4,5], 'my_string':'goddamit', 'records': results}
 
-env = Environment()
 
-localdir = '/home/olivier/pythonstuff/projects/termsearch/aggregator/templates/jinja2/'
-
-filename = 'streamer.html'
 
 #######################
 
@@ -42,6 +37,25 @@ searchform.target_language = Language.objects.get(code2d='fr')
 searchform.is_bound = True
 
 
+#############################
+# copypaste this in the shell for testing proz
+
+from aggregator.models import Language
+from aggregator.spiders import *
+
+search_parameters = {'keywords': 'tennis',
+                         'source_language': Language.objects.get(code2d='en'),
+                         'target_language': Language.objects.get(code2d='fr')}
+
+proz = ProzSpider(**search_parameters)
+
+print ([res for res in proz.parse()])
+
+# if parse() returns an error, do it again step by step
+
+response = requests.post(proz.url, data=proz.formdata)
+json_response = json.loads(response.text)['html']
+html_tree = html.fromstring(json_response)
 
 
 ########################
