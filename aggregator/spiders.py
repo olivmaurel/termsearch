@@ -69,32 +69,6 @@ class IateSpider(GenericSpider):
             if record is not None:
                 yield record
 
-    def parse_timer(self, url=None):
-
-        if url is None:
-            url = self.url
-
-        response = requests.get(url)
-
-        page_results = self.get_page_results(response, '//div[@id="searchResultBody"]/table')
-
-        for result_table in page_results:
-            result = result_table.xpath('./tr')
-
-            record = self.create_record(result)
-
-            if record is not None:
-                time.sleep(1)
-                yield record
-
-        # crawl the next page if more than 10 results
-        # for f in html_tree.xpath('//div[@id="searchResultFooter"]//*'):
-        #    res = f.xpath('normalize-space(.)')
-        #    if res == ['>']:
-        #        # todo: crawl every page when more than 10 pages
-        #        next_page = ''.join(f.xpath('normalize-space(./@href)'))
-        #        yield self.parse(next_page) # todo fix the next_page crawler
-
 
     def create_record(self, result):
 
@@ -200,8 +174,8 @@ class ProzSpider(GenericSpider):
 
     def get_terms_and_translations(self, result):
 
-        terms = result.xpath('normalize-space(string(./a))')
-        translations = result.xpath('normalize-space(string(./a[2]))')
+        terms = [result.xpath('normalize-space(string(./a))')]
+        translations = [result.xpath('normalize-space(string(./a[2]))')]
 
         return terms, translations
 
@@ -209,7 +183,6 @@ class ProzSpider(GenericSpider):
     def get_page_results(self, response, xpath):
 
         html_tree = html.fromstring(json.loads(response.text)['html'])
-        print(json.loads(response.text)['html'])
         return html_tree.xpath(xpath)
 
     def get_domains(self, result):
@@ -253,6 +226,18 @@ class TermiumSpider (GenericSpider):
         self.url = 'http://www.btb.termiumplus.gc.ca/tpv2alpha/' \
                          'alpha-eng.html?lang=eng&srchtxt={}'.format(keywords)
 
+    def parse(self):
+
+        response = requests.get(self.url)
+
+        page_results = self.get_page_results(response,
+                                             '//div[@id=\'resultrecs\']/'
+                                             'section[contains(normalize-space(@class), \'recordSet\')]/div')
+
+        for result in page_results:
+
+            yield self.create_record(result)
+
     def create_record(self, result):
 
         record = dict()
@@ -289,14 +274,3 @@ class TermiumSpider (GenericSpider):
 
         return terms
 
-    def parse(self):
-
-        response = requests.get(self.url)
-
-        page_results = self.get_page_results(response,
-                                             '//div[@id=\'resultrecs\']/'
-                                             'section[contains(normalize-space(@class), \'recordSet\')]/div')
-
-        for result in page_results:
-
-            yield self.create_record(result)

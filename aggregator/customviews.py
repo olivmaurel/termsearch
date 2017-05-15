@@ -67,6 +67,24 @@ def termium_spider_tester(request, term):
 
     return StreamingHttpResponse(spider.parse())
 
+
+def termsearchnormalhttp(request):
+
+    if request.method == 'POST':
+        form = SearchForm(request.POST)
+
+        if form.is_valid():
+
+            records = form.get_records()
+
+            return render(request, 'aggregator/search_results.html', locals())
+
+    else: # method='GET' or form is not valid
+        form = SearchForm()
+        logger.warning(locals())
+        return render(request, 'aggregator/search_home.html', locals())
+
+
 def fix_the_template_mess(request):
 
     # todo get the static directory right

@@ -59,7 +59,7 @@ TEMPLATES = [
         ],
         'APP_DIRS': True,
         'OPTIONS': {
-            'environment': 'termsearch.jinja2.environment',
+            'environment': 'termsearch.local_jinja2.environment',
         },
     },
     {

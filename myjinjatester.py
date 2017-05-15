@@ -56,6 +56,7 @@ print ([res for res in proz.parse()])
 response = requests.post(proz.url, data=proz.formdata)
 json_response = json.loads(response.text)['html']
 html_tree = html.fromstring(json_response)
+page_results = html_tree.xpath('//tbody[@class=\'search_result_body\']/tr/td[4]')
 
 
 ########################
