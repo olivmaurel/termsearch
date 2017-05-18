@@ -1,15 +1,19 @@
 {% block filters %}
 
 
-<nav class="nav nav-stacked" data-spy="affix" data-offset-top="200">
-        <h4>Filter results from</h4>
+<nav class="nav nav-stacked search-filters" data-spy="affix" data-offset-top="200">
+        <h4>Show results from</h4>
 
-        <ul>
-          <li><a href="#section2"></a> IATE </li>
-          <li><a href="#section2"></a> Proz </li>
-          <li><a href="#section2"></a> Termium </li>
+            {% for website in websites %}
+                <div class="checkbox checkbox-circle checkbox-primary filter-menu">
+                  <input id="checkbox-{{ website|lower }}"
+                         type="checkbox"
+                         class="styled"
+                         data-target=".{{ website|lower }}-result" data-toggle="collapse"  checked />
+                <label for="checkbox-{{ website|lower }}" class="text-primary">{{ website }}</label>
+                </div>
+            {% endfor %}
 
-        </ul>
 </nav>
 
 {% endblock filters %}

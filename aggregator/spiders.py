@@ -84,7 +84,6 @@ class IateSpider(GenericSpider):
         # then, every following tr is a translation term
         record['domain'] = self.get_domains(result)
         record['terms'], record['translations'] = self.get_terms_and_translations(result)
-        print(record)
         return record
 
     def get_domains(self, result):

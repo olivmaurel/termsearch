@@ -4,29 +4,31 @@
     <title>Termsearch Aggregator</title>
     <meta charset="utf-8">
     <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="{{ static('aggregator/css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ static('aggregator/css/awesome-bootstrap-checkbox.css') }}" />
     <link rel="stylesheet" type="text/css" href="{{ static('aggregator/css/style.css') }}" />
 
     </head>
 <body>
 
-<header class="container-fluid" style="background-color:grey;color:#fff;height:200px;">
-  <h1>Termsearch Aggregator</h1>
-  <h3>The online search tool for translators</h3>
-  <p>Select your language pair, enter the term or expression you are looking for.</p>
-  <p>Scroll through the results, or filter them by resource or domain using the filter menu on the left.</p>
+<header class="container-fluid">
+    <div id="navbar" class="navbar navbar-fixed-top" style="padding-right:2em;">
+   <ul class="nav navbar-nav navbar-right">
+       <li><a href="search">Search</a></li>
+       <li><a href="about">About</a></li>
+       <li><a href="contact">Contact</a></li>
+   </ul>
+  </div>
+  <!-- Logo -->
+    <div id="logo">
+      <h1><a href="search">Termsearch</a></h1>
+      <span>All your terminology searches in one place</span>
+    </div>
 </header>
 
-
-<nav class="navbar navbar-default" data-spy="affix" data-offset-top="200">
-    {% include "aggregator/search_form.html" %}
-</nav>
-
-<div class="container container-fullwidth">
-  {% block content %}
-  {% endblock content %}
-</div>
-
+{% block content %}
+{% endblock content %}
 
 <footer>
 <!-- place footer here -->
@@ -36,5 +38,6 @@
 </body>
 <script src="{{ static('aggregator/js/jquery.min.js') }}" ></script>
 <script src="{{ static('aggregator/js/bootstrap.min.js') }}" ></script>
+
 
 </html>

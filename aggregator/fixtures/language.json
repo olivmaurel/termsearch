@@ -45,14 +45,5 @@
       "code2d": "de"
     }
   },
-  {
-    "model": "aggregator.language",
-    "pk": 1,
-    "fields": {
-      "name": "English",
-      "code3d": "eng",
-      "code2d": "en"
-    }
-  }
 
 ]

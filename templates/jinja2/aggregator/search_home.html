@@ -1,1 +1,12 @@
 {% extends "aggregator/base.html"%}
+
+{% block content %}
+
+<nav class="navbar navbar-default searchbar" data-spy="affix" data-offset-top="200">
+    {% include "aggregator/search_form.html" %}
+</nav>
+  {% block results %}
+  {% endblock results %}
+
+
+{% endblock content %}

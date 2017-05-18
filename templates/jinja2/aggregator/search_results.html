@@ -1,15 +1,15 @@
-{% extends "aggregator/base.html"%}
+{% extends "aggregator/search_home.html"%}
 
-{{ context }}
-
-{% block content %}
-  <div class="row" id="content">
-    <div class="col-sm-2" id="sidebar">
-          {% include "aggregator/search_filters.html" %}
-    </div>
-    <div class="col-sm-10 col-static" id="search_results">
-      {% for record in records %}
-          <div class="results-row" id="record">
+{% block results %}
+  <div class="container container-fullwidth">
+    <div class="row" id="content">
+      <div class="col-sm-2" id="sidebar">
+            {% include "aggregator/search_filters.html" %}
+      </div>
+      <div class="col-sm-10 col-static" id="search_results">
+        {% for record in records %}
+          <div class="col-sm-10 col-static results-row collapse in {{ record['website'] }}-result" id="record">
+            <span id="website_source" class="label label-primary">{{ record['website'] }}</span>
 
               <div id="record-terms" class="col-sm-5 col-static">
                   <ul>
@@ -25,18 +25,13 @@
                       {% endfor %}
                   </ul>
               </div>
-              <hr/>
-              <div id="domains">
-                  <span id="website_source" class="label label-primary">{{ record['website'] }}</span>
-              </div>
           </div>
-          <hr/>
-      {% endfor %}
+        {% endfor %}
 
+      </div>
     </div>
   </div>
-{% endblock content %}
-
+{% endblock results %}
 
 
 

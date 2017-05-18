@@ -72,12 +72,13 @@ class SearchForm(forms.Form):
                 'proz': spiders.ProzSpider(**search_parameters),
                 'termium': spiders.TermiumSpider(**search_parameters)}[Website.name.lower()]
 
-    def get_records(self):
+    def get_records(self, websites):
 
         spiders_list = []
-        for website in self.get_all_websites():
+        for website in websites:
 
             spider = self.get_spider(website)
             spiders_list.append(spider.parse())
 
         return chain.from_iterable(spiders_list)
+

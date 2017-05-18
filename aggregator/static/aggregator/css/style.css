@@ -1,15 +1,46 @@
-li a {
-    color: green;
+/* fonts */
+
+@font-face {
+  font-family: "Oleo Script";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Oleo Script"), local("OleoScript-Regular"), url("https://fonts.gstatic.com/s/oleoscript/v5/_weQNDK6Uf40CiGFKBBUjo4P5ICox8Kq3LLUNMylGO4.woff2") format("woff2");
+  unicode-range: U+0-FF, U+131, U+152-153, U+2C6, U+2DA, U+2DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215;
 }
-.jumbotron {
-    background-color: #f4511e; /* Orange */
-    color: #ffffff;
+
+@font-face {
+  font-family: "Open Sans";
+  font-style: normal;
+  font-weight: 800;
+  src: local("Open Sans Extrabold"), local("OpenSans-Extrabold"), url("https://fonts.gstatic.com/s/opensans/v13/EInbV5DfGHOiMmvb1Xr-hugdm0LZdjqr5-oayXSOefg.woff2") format("woff2");
+  unicode-range: U+0-FF, U+131, U+152-153, U+2C6, U+2DA, U+2DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215;
 }
 
 
+/* color palette
+light cream : FCFFF5
+darker cream: D1DBBD
+green gray: 91AA9D
+light metal blue: 3E606F
+dark metal blue: 193441
+
+font colors:
+    dark grey: 696969
+*/
+
+body {
+    font-family:"Open Sans", verdana;
+    font-color: #696969;
+    background-color: #fff;
+}
 
 
 header {
+    background-color: #fff;
+
+}
+
+.search-filters {
 
 }
 
@@ -25,8 +56,8 @@ header {
 
 .nav-stacked {
   width:12em;
-
 }
+
 .nav-stacked.affix {
   background:none;
   top:70px;
@@ -43,12 +74,7 @@ header {
     text-align: center;
     margin:0 auto;
 }
-.navbar-toggle {
-}
 
-#sidebar {
-
-}
 .col-static {
   position:static;
 }
@@ -61,3 +87,61 @@ header {
   text-align:center;
 
 }
+.results-row{
+   padding:30px;
+   border: solid 0.1em #fff;
+
+}
+
+ul {
+   list-style-type: none;
+}
+
+.results-row:nth-child(even){
+  background-color: #D1DBBD;
+}
+
+.filter-menu {
+   font-weight:bold;
+   padding-left:50px;
+}
+
+.searchbar {
+   background-color: #FCFFF5;
+}
+
+/* Logo */
+
+#logo {
+    display: inline-block;
+}
+
+    #logo h1 {
+        background: #3E606F;
+        border-radius: 6px;
+        font-family: 'Oleo Script', serif;
+        font-weight: 400;
+        font-color: #fff;
+        font-size: 2.75em;
+        padding: 0.2em 0.275em;
+        letter-spacing: 0.05em;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    #logo a {
+        color: #fff;
+        text-decoration: none;
+
+    }
+    #logo a:hover,a:focus {
+        text-decoration: none;
+    }
+
+    #logo span {
+        font-weight: 800;
+        line-height: 4.5em;
+        letter-spacing: 0.025em;
+        font-size: 0.9em;
+        vertical-align: middle;
+        margin: 0 0 0 1.25em;
+    }
