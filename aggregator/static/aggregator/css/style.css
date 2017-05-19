@@ -109,7 +109,9 @@ ul {
 .searchbar {
    background-color: #FCFFF5;
 }
-
+.toprightmenu a {
+    color: #3E606F;
+}
 /* Logo */
 
 #logo {

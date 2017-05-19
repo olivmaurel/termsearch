@@ -19,7 +19,7 @@ class SearchForm(forms.Form):
 	translations,target_language,source_language,website,domain,terms,last_updated
 	ordinateur,fr,en,iate,Pharmaceutical industry,computer,"[datetime.date(2016, 11, 18)]"
 	"""
-    keywords_charfield_attrs = forms.TextInput(attrs={'size':80,
+    keywords_charfield_attrs = forms.TextInput(attrs={'size':50,
                                                       'placeholder':"Search for term"})
     keywords = forms.CharField(max_length=100,
                                widget=keywords_charfield_attrs
