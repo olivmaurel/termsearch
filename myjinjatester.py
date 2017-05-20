@@ -15,7 +15,7 @@ from aggregator.spiders import *
 from aggregator.models import Language
 from aggregator.spiders import *
 
-search_parameters = {'keywords': 'tennis',
+search_parameters = {'keywords': 'daazfagfaqfa',
                          'source_language': Language.objects.get(code2d='en'),
                          'target_language': Language.objects.get(code2d='fr')}
 

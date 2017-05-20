@@ -12,6 +12,7 @@ class GenericSpider(object):
     def __init__(self, keywords, source_language, target_language, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.keywords = keywords
+        self.name = "generic"
         self.source_language = source_language
         self.target_language = target_language
 
@@ -37,6 +38,36 @@ class GenericSpider(object):
         html_tree = self.get_html_tree(response)
         return  html_tree.xpath(xpath)
 
+    def record_template(self):
+
+        record = {'website': self.name,
+                     'source_language':self.source_language,
+                     'target_language':self.target_language}
+
+        return record
+
+    def create_record(self, result):
+
+        return self.record_template() # default method to be overriden by each specific spider
+
+    def no_results(self):
+
+        no_result = self.record_template()
+        no_result['error'] ='No results from {}'.format(self.name)
+
+        return no_result
+
+    def yield_results(self, page_results):
+
+        if not page_results:
+
+            yield self.no_results()
+
+        for result in page_results:
+
+            yield self.create_record(result)
+
+
 
 class IateSpider(GenericSpider):
 
@@ -61,6 +92,14 @@ class IateSpider(GenericSpider):
 
         page_results = self.get_page_results(response, '//div[@id="searchResultBody"]/table')
 
+        return self.yield_results(page_results)
+
+    def yield_results(self, page_results):
+
+        if not page_results:
+
+            yield self.no_results()
+
         for result_table in page_results:
             result = result_table.xpath('./tr')
 
@@ -70,13 +109,11 @@ class IateSpider(GenericSpider):
                 yield record
 
 
+
+
     def create_record(self, result):
 
-        record = dict()
-
-        record['website'] = self.name
-        record['source_language'] = self.source_language
-        record['target_language'] = self.target_language
+        record = self.record_template()
         # each result is a html table with 3+ tr tags
         # first tr is the domain
         # second tr starts with source_language.upper
@@ -154,18 +191,12 @@ class ProzSpider(GenericSpider):
         page_results = self.get_page_results(response,
                                              '//tbody[@class=\'search_result_body\']/tr/td[4]')
 
-        for result in page_results:
-
-            yield self.create_record(result)
+        return self.yield_results(page_results)
 
 
     def create_record(self, result):
 
-        record = dict()
-
-        record['website'] = self.name
-        record['source_language'] = self.source_language
-        record['target_language'] = self.target_language
+        record = self.record_template()
         record['domain'] = self.get_domains(result)
         record['terms'], record['translations'] = self.get_terms_and_translations(result)
 
@@ -233,17 +264,12 @@ class TermiumSpider (GenericSpider):
                                              '//div[@id=\'resultrecs\']/'
                                              'section[contains(normalize-space(@class), \'recordSet\')]/div')
 
-        for result in page_results:
+        return self.yield_results(page_results)
 
-            yield self.create_record(result)
 
     def create_record(self, result):
 
-        record = dict()
-
-        record['website'] = self.name
-        record['source_language'] = self.source_language
-        record['target_language'] = self.target_language
+        record = self.record_template()
         record['domain'] = self.get_domains(result)
         record['terms']  = self.get_terms(self.source_language, result)
         record['translations'] = self.get_terms(self.target_language, result)

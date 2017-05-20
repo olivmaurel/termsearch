@@ -97,6 +97,10 @@ ul {
   color:#fff;
 }
 
+.result-error {
+  font-size:2em;
+}
+
 /* left menu */
 
 .filter-menu {

@@ -25,7 +25,7 @@ try:
 except ImportError:
     pass
 
-ALLOWED_HOSTS = ['termsearch.me']
+ALLOWED_HOSTS = ['termsearch.me', 'localhost']
 
 # Application definition
 
