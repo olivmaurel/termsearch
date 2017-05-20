@@ -1,4 +1,3 @@
-
 [
   {
     "model": "aggregator.language",
@@ -44,6 +43,6 @@
       "code3d": "deu",
       "code2d": "de"
     }
-  },
+  }
 
 ]

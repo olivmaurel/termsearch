@@ -21,7 +21,8 @@ from django.conf import settings
 
 urlpatterns = [
 	url(r'^aggregator/', include('aggregator.urls')),
-    url(r'^$', views.home_page, name='home'),
+    # url(r'^$', views.home_page, name='home'),
+    url(r'^', include('aggregator.urls')),
     url(r'^admin/', admin.site.urls),
 ]
 
