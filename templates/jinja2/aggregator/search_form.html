@@ -1,5 +1,5 @@
 {% block form %}
- <form class="nav navbar-form navbar-left form-inline"  action="/aggregator/search" method="post" role="search">
+ <form class="nav navbar-form navbar-left form-inline"  action="{{ request.path }}" method="post" role="search">
    <div class="form-group">
 
         {{ csrf_input }}

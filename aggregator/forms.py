@@ -1,5 +1,6 @@
 import logging
 from itertools import chain
+import time
 
 from django import forms
 from django.db.models import Q
@@ -82,3 +83,17 @@ class SearchForm(forms.Form):
 
         return chain.from_iterable(spiders_list)
 
+    def delay(self):
+
+        for i in range(5):
+            time.sleep(0.1)
+
+    def get_records_with_delay(self, websites):
+
+        spiders_list = []
+        for website in websites:
+            spider = self.get_spider(website)
+            spiders_list.append(spider.parse())
+            spiders_list.append(self.delay())
+
+        return chain.from_iterable(spiders_list)

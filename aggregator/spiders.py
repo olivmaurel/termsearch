@@ -15,6 +15,8 @@ class GenericSpider(object):
         self.name = "generic"
         self.source_language = source_language
         self.target_language = target_language
+        self.url = ""
+        self.xpath_for_results = "" # xpath to be set in each subclass
 
     def sanitize_result_string(self, text):
 
@@ -33,10 +35,6 @@ class GenericSpider(object):
 
         return html.fromstring(response.content)
 
-    def get_page_results(self, response, xpath):
-
-        html_tree = self.get_html_tree(response)
-        return  html_tree.xpath(xpath)
 
     def record_template(self):
 
@@ -50,23 +48,28 @@ class GenericSpider(object):
 
         return self.record_template() # default method to be overriden by each specific spider
 
+    def parse(self, response=None):
+
+        if response is None:
+            response = requests.get(self.url)
+        page_results = self.get_page_results(response, self.xpath_for_results)
+
+        if not page_results:
+            yield self.no_results()
+        for result in page_results:
+            yield self.create_record(result)
+
+    def get_page_results(self, response, xpath):
+
+        html_tree = self.get_html_tree(response)
+        return  html_tree.xpath(xpath)
+
     def no_results(self):
 
         no_result = self.record_template()
         no_result['error'] ='No results from {}'.format(self.name)
 
         return no_result
-
-    def yield_results(self, page_results):
-
-        if not page_results:
-
-            yield self.no_results()
-
-        for result in page_results:
-
-            yield self.create_record(result)
-
 
 
 class IateSpider(GenericSpider):
@@ -82,6 +85,7 @@ class IateSpider(GenericSpider):
                     'method=search&query={}&sourceLanguage={}' \
                     '&targetLanguages={}&domain=0' \
                     '&matching=&typeOfSearch=s'.format(self.keywords, self.source_language, self.target_language)
+        self.xpath_for_results = '//div[@id="searchResultBody"]/table'
 
     def parse(self, url=None):
 
@@ -90,11 +94,7 @@ class IateSpider(GenericSpider):
 
         response = requests.get(url)
 
-        page_results = self.get_page_results(response, '//div[@id="searchResultBody"]/table')
-
-        return self.yield_results(page_results)
-
-    def yield_results(self, page_results):
+        page_results = self.get_page_results(response, self.xpath_for_results)
 
         if not page_results:
 
@@ -107,8 +107,6 @@ class IateSpider(GenericSpider):
 
             if record is not None:
                 yield record
-
-
 
 
     def create_record(self, result):
@@ -176,6 +174,7 @@ class ProzSpider(GenericSpider):
         self.target_language = target_language.code3d
         self.name = "proz"
         self.url = 'http://www.proz.com/ajax/ajax_search.php'
+        self.xpath_for_results = '//tbody[@class=\'search_result_body\']/tr/td[4]'
 
         self.formdata = {   'action': 'term_search',
                             'search_params[term]': self.keywords,
@@ -184,15 +183,12 @@ class ProzSpider(GenericSpider):
                             'search_params[bidirectional]': 'true',
                             'search_params[results_per_page]': '100'}
 
-    def parse(self):
+    def parse(self, response=None):
 
-        response = requests.post(self.url, data=self.formdata)
+        if response is None:
+            response = requests.post(self.url, data=self.formdata)
 
-        page_results = self.get_page_results(response,
-                                             '//tbody[@class=\'search_result_body\']/tr/td[4]')
-
-        return self.yield_results(page_results)
-
+        return super(ProzSpider, self).parse(response)
 
     def create_record(self, result):
 
@@ -255,17 +251,8 @@ class TermiumSpider (GenericSpider):
         self.name = "termium"
         self.url = 'http://www.btb.termiumplus.gc.ca/tpv2alpha/' \
                          'alpha-eng.html?lang=eng&srchtxt={}'.format(keywords)
-
-    def parse(self):
-
-        response = requests.get(self.url)
-
-        page_results = self.get_page_results(response,
-                                             '//div[@id=\'resultrecs\']/'
-                                             'section[contains(normalize-space(@class), \'recordSet\')]/div')
-
-        return self.yield_results(page_results)
-
+        self.xpath_for_results =  '//div[@id=\'resultrecs\']/' \
+                                  'section[contains(normalize-space(@class), \'recordSet\')]/div'
 
     def create_record(self, result):
 
@@ -298,4 +285,3 @@ class TermiumSpider (GenericSpider):
             terms.append(term[:term.index('\xa0') - 1])
 
         return terms
-
