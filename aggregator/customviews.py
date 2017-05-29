@@ -11,7 +11,7 @@ from django.shortcuts import render
 from aggregator.spiders import IateSpider, TermiumSpider, ProzSpider
 from .forms import SearchForm
 from .models import Search, Language
-from .views import stream_http_with_jinja2_template
+from termsearch.local_jinja2 import stream_http_with_jinja2_template
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -32,20 +32,21 @@ def get_test_search_parameters(term):
 
     return search_parameters
 
-def jinja_tester(request):
+def search_with_timer(request):
 
-    search_parameters = get_test_search_parameters()
+    if request.method == 'POST':
+        form = SearchForm(request.POST)
 
-    termium = TermiumSpider(**search_parameters)
-    proz = ProzSpider(**search_parameters)
+        if form.is_valid():
+            websites = form.get_all_websites()
+            records = form.get_records(websites)
 
-    spiders_list = [proz.parse()]
+            return stream_http_with_jinja2_template(request, 'aggregator/search_results.html', locals())
 
-    records = get_records(spiders_list)
-
-    context = {'my_list':[1,2,3,4,5], 'my_string': locals(), 'records': records, 'form':SearchForm()}
-
-    return stream_http_with_jinja2_template('aggregator/search_results.html', context)
+    else:  # method='GET' or form is not valid
+        form = SearchForm()
+        logger.warning(locals())
+        return render(request, 'aggregator/search_home.html', locals())
 
 
 
@@ -68,7 +69,7 @@ def termium_spider_tester(request, term):
     return StreamingHttpResponse(spider.parse())
 
 
-def termsearchnormalhttp(request):
+def test_httpresponse(request):
 
     if request.method == 'POST':
         form = SearchForm(request.POST)
@@ -85,33 +86,45 @@ def termsearchnormalhttp(request):
         return render(request, 'aggregator/search_home.html', locals())
 
 
-def fix_the_template_mess(request):
+def test_jinja_generate(request):
 
-    # todo get the static directory right
-    # use the correct path for the jinja2 templates
-    # 'jinja2' should replace 'template' as the top folder
-    # use the most basic context
     results = slow_response_for_testing_streaming(5)
-    context = {'my_list': [1, 2, 3, 4, 5], 'my_string': 'goddamit', 'records': results}
+    context = {'my_list': [1, 2, 3, 4, 5], 'my_string': 'This is a string.', 'results': results, 'request': request}
     # render it in a basic crude template
-    return stream_http_with_jinja2_template('fixit/streamer.html', context)
+    return stream_http_with_jinja2_template(request, 'aggregator/test_template.html', context)
 
 
-def streaming_io():
+def safemode_search(request):
+    from itertools import chain
+    if request.method == 'POST':
+        form = SearchForm(request.POST)
+        if form.is_valid():
 
-    stream = io.StringIO("Let's start streaming...")
-    for i in range(10):
-        # time.sleep(1)
-        stream.write("{}<br/>".format(i))
+            search_parameters = form.get_search_parameters()
 
-    return stream.read()
+            proz = ProzSpider(**search_parameters)
+            iate = IateSpider(**search_parameters)
 
+            # faking long request with delays inbetween parsing jobs
+            # records = chain(form.delay(), proz.parse(), form.delay(), iate.parse(), form.delay())
+            records = chain(proz.parse(), iate.parse())
+
+            return stream_http_with_jinja2_template(request,'aggregator/safemode_search.html', locals())
+    else:
+        form = SearchForm()
+        return render(request, 'aggregator/safemode_search.html', locals())
+
+
+
+def django_streamingthttp_tester(request):
+
+    return StreamingHttpResponse(slow_response_for_testing_streaming(10))
 
 def slow_response_for_testing_streaming(delay):
 
     for i in range(delay):
         time.sleep(1)
-        yield "Wew that's taking a while, hold on .... {}<br/>".format(delay)
+        yield "Wew that's taking a while, hold on .... {}<br/>".format(delay-i  )
 
 
 def mytestsearch(request):

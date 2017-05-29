@@ -9,6 +9,12 @@
       <div class="col-sm-10 col-static" id="search_results">
         {% for record in records %}
           <div class="col-sm-10 col-static results-row collapse in {{ record['website'] }}-result" id="record">
+            {% if record.error %}
+              <div class="result-error">
+                  <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                  {{ record['error'] }}
+              </div>
+            {% endif %}
             <span id="website_source" class="label label-primary">{{ record['website'] }}</span>
 
               <div id="record-terms" class="col-sm-5 col-static">

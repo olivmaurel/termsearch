@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Safe Mode search template for debugging</title>
+
+
+
+</head>
+<body>
+  {% block form %}
+ <form action="{{ request.path }}" method="post" role="search">
+   <div class="form-group">
+
+        {{ csrf_input }}
+
+
+        {{ form.source_language.errors|safe }}
+        {{ form.source_language }}
+
+        {{ form.target_language.errors|safe }}
+        {{ form.target_language }}
+
+        {{ form.keywords.errors|safe }}
+        {{ form.keywords }}
+
+        <button type="submit" id="search-button">SUBMIT</button>
+   </div>
+ </form>
+{% endblock %}
+
+{% for record in records %}
+           {% if record.error %}
+              <div class="result-error">
+                  {{ record['error'] }}
+              </div>
+            {% endif %}
+            <span id="website_source">{{ record['website'] }}</span>
+
+              <div>
+                  <ul>
+                      {% for term in record['terms'] %}
+                          <li>{{ term }}</li>
+                      {% endfor %}
+                  </ul>
+              </div>
+              <div>
+                  <ul>
+                      {% for translation in record['translations'] %}
+                          <li>{{ translation }}</li>
+                      {% endfor %}
+                  </ul>
+{% endfor %}
+
+</body>
+</html>

@@ -25,23 +25,21 @@ light metal blue: 3E606F
 dark metal blue: 193441
 
 font colors:
-    dark grey: 696969
+    dark grey: 292f33
 */
 
 body {
     font-family:"Open Sans", verdana;
-    font-color: #696969;
+    color: #292f33;
     background-color: #fff;
 }
 
-
-header {
-    background-color: #fff;
-
-}
 
 .search-filters {
+}
 
+header {
+    background-color:#FCFFF5;
 }
 
 .navbar.affix {
@@ -82,11 +80,8 @@ header {
   width:100%;
 }
 
-#search-button {
-  width:5em;
-  text-align:center;
+/* search results */
 
-}
 .results-row{
    padding:30px;
    border: solid 0.1em #fff;
@@ -98,20 +93,53 @@ ul {
 }
 
 .results-row:nth-child(even){
-  background-color: #D1DBBD;
+  background-color: #3E606F;
+  color:#fff;
 }
+
+.result-error {
+  font-size:2em;
+}
+
+/* left menu */
 
 .filter-menu {
    font-weight:bold;
    padding-left:50px;
 }
 
+/* searchbar */
+
 .searchbar {
-   background-color: #FCFFF5;
+   background-color: #3E606F;
 }
-.toprightmenu a {
-    color: #3E606F;
+
+#search-button {
+  width:5em;
+  text-align:center;
+
 }
+#search-button:hover {
+    background-color: #FCFFF5;
+    color: #193441;
+}
+
+/* top right menu */
+
+ul.nav  a {
+    color: #193441;
+
+}
+ul.nav a:hover {
+    color:#3E606F;
+    background-color:#FCFFF5;
+
+}
+.fa-github {
+    font-size: 2.3em;
+}
+
+
 /* Logo */
 
 #logo {
@@ -119,11 +147,10 @@ ul {
 }
 
     #logo h1 {
-        background: #3E606F;
+        background: #193441;
         border-radius: 6px;
         font-family: 'Oleo Script', serif;
         font-weight: 400;
-        font-color: #fff;
         font-size: 2.75em;
         padding: 0.2em 0.275em;
         letter-spacing: 0.05em;
@@ -131,10 +158,10 @@ ul {
         vertical-align: middle;
     }
     #logo a {
-        color: #fff;
+        color: #FCFFF5;
         text-decoration: none;
-
     }
+
     #logo a:hover,a:focus {
         text-decoration: none;
     }
