@@ -17,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JINJA2_DIR = os.path.join(BASE_DIR, 'templates/jinja2')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # import local settings containing secretkey and database authentication parameters
 try:
@@ -25,7 +25,7 @@ try:
 except ImportError:
     pass
 
-ALLOWED_HOSTS = ['termsearch.me']
+ALLOWED_HOSTS = ['termsearch.me', 'www.termsearch.me', '207.154.244.48', '127.0.0.1', 'localhost']
 
 # Application definition
 
@@ -124,6 +124,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
 
 # ckeditor WYSIWYG stuff
 MEDIA_URL = '/media/'
