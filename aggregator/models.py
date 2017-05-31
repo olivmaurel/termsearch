@@ -63,21 +63,21 @@ class Search(models.Model):
     def __str__(self):
         return "\"{}\" ({} > {}) on {}".format(self.keywords, self.source_language, self.target_language, self.website)
 
-    def get_or_create_manytomanys(self, page_record):
+    def get_or_create_manytomanys(self, record):
         terms, translations, domains = [], [], []
 
-        # for each term in a page_record, get or create in db, append to terms list
-        for term in page_record['terms']:
+        # for each term in a record, get or create in db, append to terms list
+        for term in record['terms']:
             t, created = Term.objects.get_or_create(name=term, language=self.source_language)
             terms.append(t)
             logger.debug("term : {}\n created : {} \n".format(term, created))
-        # for each translation in a page_record, get or create in db, append to translations list
-        for translation in page_record['translations']:
+        # for each translation in a record, get or create in db, append to translations list
+        for translation in record['translations']:
             t, created = Term.objects.get_or_create(name=translation, language=self.target_language)
             logger.debug("translation : {}\n created : {} \n".format(translation, created))
             translations.append(t)
-        # for each domain in a page_record
-        for domain in page_record['domain']:
+        # for each domain in a record
+        for domain in record['domain']:
             dom, created = Domain.objects.get_or_create(name=domain)
             logger.debug("domain: {}\n created : {}".format(domain, created))
             domains.append(dom)
@@ -85,27 +85,6 @@ class Search(models.Model):
         return terms, translations, domains
 
 
-    def get_records(self):
-        # dont use this # todo delete this method
-        spider = self.get_spider()
-
-        page_results = []
-        response = requests.get(spider.url)
-        for record in spider.parse(response):
-            page_results.append(record)
-
-        return page_results
-
-    def get_spider(self):
-        search_parameters = {
-            'keywords': self.keywords,
-            'source_language': self.source_language,
-            'target_language': self.target_language}
-
-        # todo test dict performance versus elif switch-like statement
-        return {'iate': IateSpider(**search_parameters),
-                'proz': ProzSpider(**search_parameters),
-                'termium': TermiumSpider(**search_parameters)}[self.website.name.lower()]
 
     def save_results_in_db(self, page_results):
 

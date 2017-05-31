@@ -77,7 +77,14 @@ class SearchForm(forms.Form):
 
         spiders_list = []
         for website in websites:
-
+            # for each website, check if search is already in db
+            # search_parameters = self.get_search_parameters()
+            # search, is_new_search = Search.get_or_create(keywords=self.cleaned_data['keywords'])
+            # if (is_new_search):
+                # spider = self.get_spider(website)
+                # spiders_list.append(spider.parse())
+            # else:
+                # return results from db as a generator
             spider = self.get_spider(website)
             spiders_list.append(spider.parse())
 
