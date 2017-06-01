@@ -43,9 +43,6 @@ def contact(request):
     # todo the contact page
     return render(request, 'aggregator/contact.html', locals())
 
-def googleverif(request):
-    return render(request, 'aggregator/google9697628e34fce99f.html', locals())
-
 
 class WebsiteListView(ListView):
 

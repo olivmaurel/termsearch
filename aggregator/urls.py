@@ -9,7 +9,6 @@ urlpatterns = [
     url(r'^search$', views.term_search, name='search'),
     url(r'^about$', views.about, name='about'),
     url(r'^contact$', views.contact, name='contact'),
-    url(r'^google9697628e34fce99f$', views.googleverif, name='google9697628e34fce99f'),
 
     url(r'^proz/(?P<term>\w+)/$', customviews.proz_spider_tester, name='proz'),
     url(r'^termium/(?P<term>\w+)/$', customviews.termium_spider_tester, name='termium'),
