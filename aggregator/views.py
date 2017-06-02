@@ -41,6 +41,7 @@ def about(request):
 
 def contact(request):
     # todo the contact page
+    print("IP Address for debug-toolbar: " + request.META['REMOTE_ADDR'])
     return render(request, 'aggregator/contact.html', locals())
 
 
