@@ -16,7 +16,6 @@ def home_page(request):
 
     return render(request, 'aggregator/index.html', locals())
 
-
 def term_search(request):
 
     if request.method == 'POST':
@@ -41,6 +40,7 @@ def about(request):
 
 def contact(request):
     # todo the contact page
+    print("IP Address for debug-toolbar: " + request.META['REMOTE_ADDR'])
     return render(request, 'aggregator/contact.html', locals())
 
 

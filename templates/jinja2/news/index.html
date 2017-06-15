@@ -1,9 +1,9 @@
-{% extends "aggregator/base.html"%}
-
+{% extends "news/base.html"%}
 
 {% block content %}
+
+<h1>News</h1>
 <ul>
-	<li><a href="{{ url('search') }}">Term search aggregator</a></li>
 	<li><a href="{{ url('news:releases') }}">Release notes</a></li>
 	<li><a href="{{ url('news:todo') }}">The Todo list</a></li>
 </ul>

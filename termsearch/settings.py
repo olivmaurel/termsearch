@@ -17,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JINJA2_DIR = os.path.join(BASE_DIR, 'templates/jinja2')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# DEBUG = set in local_settings.py
 
 # import local settings containing secretkey and database authentication parameters
 try:

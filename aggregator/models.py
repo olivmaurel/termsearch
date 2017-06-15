@@ -9,8 +9,9 @@ logger = logging.getLogger(__name__)
 
 class Language(models.Model):
     name = models.CharField(max_length=30, unique=True)
-    code3d = models.CharField(max_length=3)
-    code2d = models.CharField(max_length=2)
+    code2d = models.CharField(max_length=2, unique=True)
+    code3d = models.CharField(max_length=3, unique=True)
+
 
     def __str__(self):
         return "{} - {}".format(self.code2d.lower(), self.name)
@@ -112,6 +113,7 @@ class Search(models.Model):
 
 class Record(models.Model):
     terms = models.ManyToManyField(Term, related_name="terms")
+    # terms_list = models.ArrayField(null=True)
     translations = models.ManyToManyField(Term, related_name="translations")
     last_update = models.DateTimeField(default=timezone.now)
     domains = models.ManyToManyField(Domain)

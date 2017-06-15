@@ -4,6 +4,7 @@
 
 
 {% block content %}
-<p>This is the about page</p>
+<h1>About Termsearch</h1>
+{{ about_md | markdown | safe  }}
 
 {% endblock content %}
