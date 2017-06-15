@@ -5,7 +5,7 @@ from django.conf import settings
 
 urlpatterns = [
 
-    url(r'^news/', include('news.urls')),
+    url(r'^news/', include('news.urls',namespace="news")),
     url(r'^', include('aggregator.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^ckeditor/', include('ckeditor_uploader.urls')),

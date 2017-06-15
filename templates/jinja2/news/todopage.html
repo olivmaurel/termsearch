@@ -2,8 +2,6 @@
 
 {% block content %}
 <div class="md-content">
-    <h1>{{todopage_title}}</h1>
     {{ todopage_md | markdown | safe  }}
-
 </div>
 {% endblock %}

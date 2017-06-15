@@ -1,12 +1,11 @@
 {% extends "aggregator/base.html"%}
 
 
-
-
 {% block content %}
 <ul>
-	<li><a href='aggregator/search'>Term search aggregator</a></li>
-	<li>Crawler tester</li>
+	<li><a href="{{ url('search') }}">Term search aggregator</a></li>
+	<li><a href="{{ url('news:releases') }}">Release notes</a></li>
+	<li><a href="{{ url('news:todo') }}">The Todo list</a></li>
 </ul>
 
 {% endblock content %}

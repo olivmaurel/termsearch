@@ -4,7 +4,7 @@ from aggregator import views, customviews
 
 urlpatterns = [
     url(r'^ressources$', views.WebsiteListView.as_view(), name='ressources'),
-    url(r'^$', views.home_page, name='home'),
+    url(r'^$', views.home_page, name='index'),
     url(r'^search$', views.term_search, name='search'),
     url(r'^about$', views.about, name='about'),
     url(r'^contact$', views.contact, name='contact'),

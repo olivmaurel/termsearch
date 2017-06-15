@@ -7,12 +7,12 @@ from termsearch.settings import BASE_DIR
 
 logger = logging.getLogger(__name__)
 
-def home(request):
+def index(request):
 
     return render(request, 'news/index.html', locals())
 
 def releases(request):
-
+    releases_md = get_md('releases.md')
     return render(request, 'news/releases.html', locals())
 
 def todopage(request):
@@ -23,7 +23,7 @@ def todopage(request):
 
 def get_md(filename):
 
-    filepath = os.path.join(BASE_DIR, 'news/static/news/md/{}'.format(filename))
+    filepath = os.path.join(BASE_DIR, 'static/news/md/{}'.format(filename))
 
     with open(filepath, 'r') as f:
         return f.read()
