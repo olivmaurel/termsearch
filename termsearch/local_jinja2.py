@@ -5,6 +5,21 @@ from termsearch.settings import JINJA2_DIR
 from django.http import StreamingHttpResponse
 from django.template.backends.utils import csrf_input_lazy, csrf_token_lazy
 
+def markdown(md):
+    """
+    Markdown to HTML conversion.
+    """
+    import bleach
+    from markdown import markdown
+    allowed_tags = ['a', 'abbr', 'acronym', 'b',
+                    'blockquote', 'code', 'em',
+                    'i', 'li', 'ol', 'pre', 'strong',
+                    'ul', 'h1', 'h2', 'h3', 'p', 'br', 'ins', 'del']
+    return bleach.linkify(bleach.clean(
+        markdown(md, output_format='html', extensions=['nl2br', 'del_ins']),
+        tags=allowed_tags, strip=True))
+
+
 
 def environment(**options):
     env = Environment(**options)
@@ -12,7 +27,10 @@ def environment(**options):
         'static': staticfiles_storage.url,
         'url': reverse,
     })
+    env.filters['markdown'] = markdown
     return env
+
+
 
 def environment_with_loader():
 

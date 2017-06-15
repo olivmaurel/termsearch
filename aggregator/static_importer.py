@@ -13,8 +13,11 @@ django.setup()
 
 from aggregator.models import Language
 
+
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
+
+
 
 def import_languages_from_csv(path):
     logger.info("Importing languages...")

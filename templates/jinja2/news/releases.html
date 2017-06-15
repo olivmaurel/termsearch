@@ -1,0 +1,13 @@
+{% extends "news/base.html"%}
+
+{% block content %}
+
+<div class="md-content">
+
+  {{ releases_md  | markdown | safe }}
+
+
+
+</div>
+
+{% endblock %}

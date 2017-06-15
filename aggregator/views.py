@@ -16,7 +16,6 @@ def home_page(request):
 
     return render(request, 'aggregator/index.html', locals())
 
-
 def term_search(request):
 
     if request.method == 'POST':

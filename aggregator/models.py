@@ -113,6 +113,7 @@ class Search(models.Model):
 
 class Record(models.Model):
     terms = models.ManyToManyField(Term, related_name="terms")
+    # terms_list = models.ArrayField(null=True)
     translations = models.ManyToManyField(Term, related_name="translations")
     last_update = models.DateTimeField(default=timezone.now)
     domains = models.ManyToManyField(Domain)
