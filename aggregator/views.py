@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.views.generic.list import ListView
 # Get an instance of a logger
 
-from termsearch.local_jinja2 import stream_http_with_jinja2_template
+from termsearch.jinja2utils import stream_http_with_jinja2_template
 
 from .forms import SearchForm
 from .models import Website

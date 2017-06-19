@@ -1,0 +1,4 @@
+# uninstall all the pip packages, if needed
+#       pip freeze | xargs pip uninstall -y
+
+-r base.txt # includes the base.txt requirements file

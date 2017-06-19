@@ -3,7 +3,7 @@ import os
 from django.shortcuts import render
 from django.views.generic.list import ListView
 # Get an instance of a logger
-from termsearch.settings import BASE_DIR
+from termsearch.settings.base import BASE_DIR
 
 logger = logging.getLogger(__name__)
 

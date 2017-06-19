@@ -1,7 +1,7 @@
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.urlresolvers import reverse
 from jinja2 import Environment, FileSystemLoader
-from termsearch.settings import JINJA2_DIR
+from termsearch.settings.base import JINJA2_DIR
 from django.http import StreamingHttpResponse
 from django.template.backends.utils import csrf_input_lazy, csrf_token_lazy
 

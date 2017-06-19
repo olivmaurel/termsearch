@@ -1,0 +1,24 @@
+# uninstall all the pip packages, if needed
+#       pip freeze | xargs pip uninstall -y
+
+appdirs==1.4.3
+bleach==2.0.0
+certifi==2017.4.17
+chardet==3.0.4
+Django==1.11.2
+django-ckeditor==5.2.2
+html5lib==0.999999999
+idna==2.5
+Jinja2==2.9.6
+lxml==3.8.0
+Markdown==2.6.8
+MarkupSafe==1.0
+packaging==16.8
+psycopg2==2.7.1
+pyparsing==2.2.0
+pytz==2017.2
+requests==2.18.1
+six==1.10.0
+sqlparse==0.2.3
+urllib3==1.21.1
+webencodings==0.5.1

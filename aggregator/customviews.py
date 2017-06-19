@@ -11,7 +11,7 @@ from django.shortcuts import render
 from aggregator.spiders import IateSpider, TermiumSpider, ProzSpider
 from .forms import SearchForm
 from .models import Search, Language
-from termsearch.local_jinja2 import stream_http_with_jinja2_template
+from termsearch.jinja2utils import stream_http_with_jinja2_template
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
