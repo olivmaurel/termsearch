@@ -4,8 +4,7 @@ import logging
 import sys
 import django
 
-LOCAL_DIR =  os.path.dirname(__file__)
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "termsearch.settings")
+LOCAL_DIR =  os.path.dirname(os.path.dirname(__file__))
 
 sys.path.append(os.path.abspath(os.path.dirname('../')))
 sys.path.append(os.path.abspath(os.path.dirname('.')))
