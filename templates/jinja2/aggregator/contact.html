@@ -1,19 +1,7 @@
 {% extends "aggregator/base.html"%}
 
+{% block content %}
 
+  {{ contact_md | markdown | safe  }}
 
-
-  {% block content %}
-<div class="col-sm-1" >
-
-</div>
-<div class="col-sm-10 center-block" style="background-color:#D1DBBD; height:700px;border-radius: 10px;">
-
-  <p>This is the contact page</p>
-</div>
-
-<div class="col-sm-1" >
-
-</div>
-    {% endblock content %}
-
+{% endblock content %}

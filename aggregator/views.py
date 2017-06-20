@@ -1,9 +1,9 @@
 import logging
-
+import os
 from django.shortcuts import render
 from django.views.generic.list import ListView
 # Get an instance of a logger
-
+from termsearch.settings.base import BASE_DIR
 from termsearch.jinja2utils import stream_http_with_jinja2_template
 
 from .forms import SearchForm
@@ -35,14 +35,20 @@ def term_search(request):
 
 
 def about(request):
-    # todo the about page
+    about_md = get_md('about.md')
     return render(request, 'aggregator/about.html', locals())
 
 def contact(request):
-    # todo the contact page
-    print("IP Address for debug-toolbar: " + request.META['REMOTE_ADDR'])
+    contact_md = get_md('contact.md')
     return render(request, 'aggregator/contact.html', locals())
 
+
+def get_md(filename):
+
+    filepath = os.path.join(BASE_DIR, 'static/aggregator/md/{}'.format(filename))
+
+    with open(filepath, 'r') as f:
+        return f.read()
 
 class WebsiteListView(ListView):
 
