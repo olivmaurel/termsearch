@@ -4,6 +4,9 @@ from jinja2 import Environment, FileSystemLoader
 from termsearch.settings.base import JINJA2_DIR
 from django.http import StreamingHttpResponse
 from django.template.backends.utils import csrf_input_lazy, csrf_token_lazy
+import os
+from termsearch.settings.base import BASE_DIR
+
 
 def markdown(md):
     """
@@ -46,3 +49,11 @@ def stream_http_with_jinja2_template(request, template, context):
         context['csrf_token'] = csrf_token_lazy(request)
 
     return StreamingHttpResponse(j2_env.get_template(template).generate(context))
+
+def get_md(filename):
+
+    filepath = os.path.join(BASE_DIR, filename)
+
+    with open(filepath, 'r') as f:
+        return f.read()
+
